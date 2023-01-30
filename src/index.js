@@ -58,15 +58,40 @@ const BASE_URL = 'https://github.com/minilabus/bdp_data/raw/main/'
 //                     'sub-01_epo-10.xml', 'sub-01_epo-11.xml']
 const TIME_FILES = ['sub-01_epo-01', 'sub-01_epo-02']
 
-async function getData(i) {
-  const response = await fetch(BASE_URL+TIME_FILES[i]+'.txt')
+const COLORMAP = [
+  [1, 1, 1, 1],
+  [0.19215686, 0.50980392, 0.74117647, 1.],
+  [0.41960784, 0.68235294, 0.83921569, 1.],
+  [0.61960784, 0.79215686, 0.88235294, 1.],
+  [0.77647059, 0.85882353, 0.9372549, 1.],
+  [0.90196078, 0.33333333, 0.05098039, 1.],
+  [0.99215686, 0.55294118, 0.23529412, 1.],
+  [0.99215686, 0.68235294, 0.41960784, 1.],
+  [0.99215686, 0.81568627, 0.63529412, 1.],
+  [0.19215686, 0.63921569, 0.32941176, 1.],
+  [0.45490196, 0.76862745, 0.4627451, 1.],
+  [0.63137255, 0.85098039, 0.60784314, 1.],
+  [0.78039216, 0.91372549, 0.75294118, 1.],
+  [0.45882353, 0.41960784, 0.69411765, 1.],
+  [0.61960784, 0.60392157, 0.78431373, 1.],
+  [0.7372549, 0.74117647, 0.8627451, 1.],
+  [0.85490196, 0.85490196, 0.92156863, 1.],
+  [0.38823529, 0.38823529, 0.38823529, 1.],
+  [0.58823529, 0.58823529, 0.58823529, 1.],
+  [0.74117647, 0.74117647, 0.74117647, 1.],
+  [0.85098039, 0.85098039, 0.85098039, 1.]]
+
+console.log(COLORMAP.length)
+
+async function getAnnotData(i) {
+  const response = await fetch(BASE_URL + TIME_FILES[i] + '.txt')
   const data = await response.text()
   return data.split('\n').map(Number)
 }
 
 const annotData = []
-for(var i = 0; i < TIME_FILES.length; i++){
-  let tmpData = await getData(i)
+for (var i = 0; i < TIME_FILES.length; i++) {
+  let tmpData = await getAnnotData(i)
   const vtkAnnotArray = new Uint8Array(tmpData)
   annotData.push(vtkAnnotArray)
 }
@@ -74,7 +99,7 @@ for(var i = 0; i < TIME_FILES.length; i++){
 function downloadTimeSeries() {
   return Promise.all(
     TIME_FILES.map((filename) =>
-      fetchBinary(BASE_URL+filename+'.xml').then((binary) => {
+      fetchBinary(BASE_URL + filename + '.xml').then((binary) => {
         const reader = vtkXMLPolyDataReader.newInstance();
         reader.parseAsArrayBuffer(binary);
         return reader.getOutputData(0);
@@ -91,52 +116,25 @@ function getDataTimeStep(vtkObj) {
   return null;
 }
 
-function hexToRgb(hex) {
-  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
-  } : null;
-}
 
-function rainbow(numOfSteps, step) {
-  // This function generates vibrant, "evenly spaced" colours (i.e. no clustering). This is ideal for creating easily distinguishable vibrant markers in Google Maps and other apps.
-  // Adam Cole, 2011-Sept-14
-  // HSV to RBG adapted from: http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
-  var r, g, b;
-  var h = step / numOfSteps;
-  var i = ~~(h * 6);
-  var f = h * 6 - i;
-  var q = 1 - f;
-  switch(i % 6){
-      case 0: r = 1; g = f; b = 0; break;
-      case 1: r = q; g = 1; b = 0; break;
-      case 2: r = 0; g = 1; b = f; break;
-      case 3: r = 0; g = q; b = 1; break;
-      case 4: r = f; g = 0; b = 1; break;
-      case 5: r = 1; g = 0; b = q; break;
-  }
-  var c = "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) + ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" + (~ ~(b * 255)).toString(16)).slice(-2);
-  return hexToRgb(c);
-}
 
 function setVisibleDataset(ds, id) {
-  if (! isTextured) {
+  if (!isTextured) {
     console.log('not textured')
     // console.log(annotData[Number(timeslider.value)])
     // console.log(originalColor[Number(timeslider.value)])
 
     const oriAnnot = annotData[Number(timeslider.value)]
-    const rgbaArray = new Uint8Array((oriAnnot.length-1) * 3);
+    const rgbaArray = new Uint8Array((oriAnnot.length - 1) * 3);
     // LUT = vtk.vtkLookupTable()
     // LUT.SetTableRange(255)
     for (let idx = 0; idx < oriAnnot.length; idx++) {
-      var currColor = rainbow(255, oriAnnot[idx])
+
       // console.log(idx, oriAnnot[idx], c)
-      rgbaArray[(oriAnnot.length*0)+idx] = 255 * currColor['r'];
-      rgbaArray[(oriAnnot.length*1)+idx] = 255 * currColor['g'];
-      rgbaArray[(oriAnnot.length*2)+idx] = 255 * currColor['b'];
+      // console.log(currColor)
+      rgbaArray[(idx * 3)] = 255 * COLORMAP[oriAnnot[idx]][0];
+      rgbaArray[(idx * 3) + 1] = 255 * COLORMAP[oriAnnot[idx]][1];
+      rgbaArray[(idx * 3) + 2] = 255 * COLORMAP[oriAnnot[idx]][2];
     }
     ds.getPointData().getArrayByName('RGB').setData(rgbaArray)
     // console.log(oriColors)
@@ -150,9 +148,8 @@ function setVisibleDataset(ds, id) {
     console.log('textured')
   }
 
-  
+
   mapper.setInputData(ds);
-  renderer.resetCamera();
   renderWindow.render();
 }
 
@@ -216,7 +213,7 @@ downloadTimeSeries().then((downloadedData) => {
   timeslider.value = 0;
 
   // set up camera
-  renderer.getActiveCamera().setPosition(0.40, 0., 0.)
+  renderer.getActiveCamera().setPosition(0.40, -0., 0.)
   renderer.getActiveCamera().setViewUp(0.1, 0.3, 1.)
 
   setVisibleDataset(timeSeriesData[0], 0);
