@@ -1,3 +1,4 @@
+<!-- PANEL ABOUT GENERAL -->
 <table>
   <tr>
     <td>
@@ -11,9 +12,184 @@
     </td>
   </tr>
   <tr>
-    <td>Color</td>
+    <td>
+      <select class='representations' style="width: 100%">
+        <option value='1' selected>Cortical</option>
+        <option value='2'>Sub-Cortical</option>
+        <option value='3'>Tractography</option>
+      </select>
+    </td>
+  </tr>
+
+  </table>
+  
+<!-- PANEL ABOUT CORTICAL -->
+
+  <table style="display: ''" name="cortical">
+  <tr>
+    <td>AG</td>
     <td colspan="3">
-      <input class='Color' type="checkbox" />
+      <input class='cor_AG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>FrOrb</td>
+    <td colspan="3">
+      <input class='cor_FrOrb' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>FuG</td>
+    <td colspan="3">
+      <input class='cor_FuG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>IFG</td>
+    <td colspan="3">
+      <input class='cor_IFG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>IOG</td>
+    <td colspan="3">
+      <input class='cor_IOG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>ITG</td>
+    <td colspan="3">
+      <input class='cor_ITG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>LG</td>
+    <td colspan="3">
+      <input class='cor_LG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>MFG</td>
+    <td colspan="3">
+      <input class='cor_MFG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>MOG</td>
+    <td colspan="3">
+      <input class='cor_MOG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>MTG</td>
+    <td colspan="3">
+      <input class='cor_MTG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>PHG</td>
+    <td colspan="3">
+      <input class='cor_PHG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>PoCG</td>
+    <td colspan="3">
+      <input class='cor_PoCG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>PrCG</td>
+    <td colspan="3">
+      <input class='cor_PrCG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>SFG</td>
+    <td colspan="3">
+      <input class='cor_SFG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>SMG</td>
+    <td colspan="3">
+      <input class='cor_SMG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>SOG</td>
+    <td colspan="3">
+      <input class='cor_SOG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>SPG</td>
+    <td colspan="3">
+      <input class='cor_SPG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>STG</td>
+    <td colspan="3">
+      <input class='cor_STG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>T_pole</td>
+    <td colspan="3">
+      <input class='cor_TP' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>Show White</td>
+    <td colspan="3">
+      <input class='cor_White' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>(Un)Toggle All</td>
+    <td colspan="3">
+      <button class='CorticalToggle' type="button">Click Me!</button>
+    </td>
+  </tr>
+</table>
+
+<!-- PANEL ABOUT SUBCORTICAL -->
+
+<table style="display: none" name="sub-cortical">
+  <tr>
+    <td>ZzZ</td>
+    <td colspan="3">
+      <input class='ZzZ' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>Show White</td>
+    <td colspan="3">
+      <input class='CorW' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>(Un)Toggle All</td>
+    <td colspan="3">
+      <button class='SubCorticalToggle' type="button">Click Me!</button>
+    </td>
+  </tr>
+</table>
+
+<!-- PANEL ABOUT TRACTOGRAPHY -->
+
+<table style="display: none" name="tractography">
+  <tr>
+    <td>zZz</td>
+    <td colspan="3">
+      <input class='zZz' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>(Un)Toggle All</td>
+    <td colspan="3">
+      <button class='TractographyToggle' type="button">Click Me!</button>
     </td>
   </tr>
 </table>
