@@ -15,36 +15,10 @@ import controlPanel from './controller.html';
 
 const { fetchBinary } = vtkHttpDataAccessHelper;
 
-// document.getElementById("yourSubTableId").display = "";  //Show the table
-// document.getElementById("yourSubTableId").display = "none";  //Hide the table
-// ----------------------------------------------------------------------------
-// Standard rendering code setup
-// ----------------------------------------------------------------------------
-
-const fullScreenRenderer = vtkFullScreenRenderWindow.newInstance({
-  background: [0, 0, 0],
-});
-const renderer = fullScreenRenderer.getRenderer();
-const renderWindow = fullScreenRenderer.getRenderWindow();
-
-const mapper = vtkMapper.newInstance();
-mapper.setInputData(vtkPolyData.newInstance());
-
-const actor = vtkActor.newInstance();
-actor.setMapper(mapper);
-
-renderer.addActor(actor);
-renderer.resetCamera();
-renderWindow.render();
-// ----------------------------------------------------------------------------
-// Example code
-// ----------------------------------------------------------------------------
-// Download a series of VTP files in a time series, sort them by time, and
-// then display them in a playback series.
-// ----------------------------------------------------------------------------
 
 const BASE_URL = 'https://github.com/minilabus/bdp_data/raw/main/'
-const TIME_FILES = ['sub-01_epo-01', 'sub-01_epo-02']
+const TIME_FILES = ['sub-01_epo-01', 'sub-01_epo-02', 'sub-01_epo-03',
+                    'sub-01_epo-04', 'sub-01_epo-05', 'sub-01_epo-06']
 const COLORMAP = {
   0: [255, 255, 255], // WHITE (FFFFFF)
   1: [142, 250, 0], // AG (8EFA00)
@@ -66,8 +40,12 @@ const COLORMAP = {
   17: [0, 144, 81], // SPG (009051)
   18: [4, 51, 255], // STG (0433FF)
   19: [0, 113, 255], // TP (0071FF)
+  20: [255, 147, 0], // MFG (FF9300)
+  21: [0, 144, 81], // SPG (009051)
+  22: [0, 249, 0], // PoCG (00F900)
+  23: [255, 38, 0], // PrCG (FF2600)
 };
-
+// location.reload(true);
 const isToggled = {
   'CorticalToggle': true,
   'SubCorticalToggle': true,
@@ -95,9 +73,76 @@ const isTextured = {
   'cor_SPG': true,
   'cor_STG': true,
   'cor_TP': true,
+  'AG_MFG': true,
+  'AG_SPG': true,
+  'AG_PoCG': true,
+  'AG_PrCG': true,
 }
+
+const isShown = {
+  'asso_dorsal_AGWM_IFGWM_R': false,
+  'asso_dorsal_AGWM_IFGWM_R': false,
+  'asso_dorsal_AGWM_MFGWM_R': false,
+  'asso_ventral_AGWM_SFGWM_R': false,
+  'asso_dorsal_AGWM_PrCGWM_R': false,
+  'asso_short_AGWM_ITGWM_R': false,
+  'asso_short_AGWM_MTGWM_R': false,
+  'asso_short_AGWM_STGWM_R': false,
+  'asso_short_AGWM_SPGWM_R': false,
+  'asso_short_AGWM_SMGWM_R': false,
+  'asso_short_AGWM_PoCG_R': false
+}
+const tractoNames = Object.keys(isShown)
 const textureNames = Object.keys(isTextured)
 const toggleNames = Object.keys(isToggled)
+
+// document.getElementById("yourSubTableId").display = "";  //Show the table
+// document.getElementById("yourSubTableId").display = "none";  //Hide the table
+// ----------------------------------------------------------------------------
+// Standard rendering code setup
+// ----------------------------------------------------------------------------
+
+const fullScreenRenderer = vtkFullScreenRenderWindow.newInstance({
+  background: [0, 0, 0],
+});
+const renderer = fullScreenRenderer.getRenderer();
+const renderWindow = fullScreenRenderer.getRenderWindow();
+
+// Surface
+const surfaceMapper = vtkMapper.newInstance();
+surfaceMapper.setInputData(vtkPolyData.newInstance());
+const surfaceActor = vtkActor.newInstance();
+surfaceActor.getProperty().setInterpolationToPhong()
+// surfaceActor.getProperty().setSpecular(0.2)
+surfaceActor.getProperty().setAmbient(0.1)
+surfaceActor.getProperty().setBackfaceCulling(true)
+surfaceActor.setMapper(surfaceMapper);
+
+// Tractography
+var tractoMapperList = []
+var tractoActorList = []
+for (var i = 0; i < tractoNames.length; i++) {
+  const tractoMapper = vtkMapper.newInstance();
+  tractoMapper.setInputData(vtkPolyData.newInstance());
+  tractoMapperList.push(tractoMapper)
+  const tractoActor = vtkActor.newInstance();
+  tractoActor.setMapper(tractoMapper);
+  tractoActorList.push(tractoActor)
+}
+
+renderer.addActor(surfaceActor);
+for (var i = 0; i < tractoNames.length; i++) {
+  renderer.addActor(tractoActorList[i]);
+}
+renderer.resetCamera();
+renderWindow.render();
+// ----------------------------------------------------------------------------
+// Example code
+// ----------------------------------------------------------------------------
+// Download a series of VTP files in a time series, sort them by time, and
+// then display them in a playback series.
+// ----------------------------------------------------------------------------
+
 
 async function getAnnotData(i) {
   const response = await fetch(BASE_URL + TIME_FILES[i] + '.txt')
@@ -116,6 +161,18 @@ function downloadTimeSeries() {
   return Promise.all(
     TIME_FILES.map((filename) =>
       fetchBinary(BASE_URL + filename + '.xml').then((binary) => {
+        const reader = vtkXMLPolyDataReader.newInstance();
+        reader.parseAsArrayBuffer(binary);
+        return reader.getOutputData(0);
+      })
+    )
+  );
+}
+
+function downloadTracto() {
+  return Promise.all(
+    tractoNames.map((filename) =>
+      fetchBinary(BASE_URL + 'tracto/' + filename + '.xml').then((binary) => {
         const reader = vtkXMLPolyDataReader.newInstance();
         reader.parseAsArrayBuffer(binary);
         return reader.getOutputData(0);
@@ -151,8 +208,25 @@ function setVisibleDataset(ds) {
     }
   }
   ds.getPointData().getArrayByName('RGB').setData(rgbaArray)
-  mapper.setInputData(ds);
+  setVisibleTractoDataset()
+  surfaceActor.getProperty().setOpacity(opacityslider.value / 10.0);
+  surfaceMapper.setInputData(ds);
   renderWindow.render();
+}
+
+function setVisibleTractoDataset() {
+  for (let idx = 0; idx < tractoNames.length; idx++) {
+    tractoMapperList[idx].setInputData(tractoData[idx]);
+    const isCurrOn = isShown[tractoNames[idx]]
+    console.log(isCurrOn)
+    if (isCurrOn) {
+      tractoActorList[idx].setVisibility(1)
+    }
+    else {
+      tractoActorList[idx].setVisibility(0)
+    }
+    renderWindow.render();
+  }
 }
 
 // -----------------------------------------------------------
@@ -173,9 +247,11 @@ function uiUpdateSlider(max) {
 // -----------------------------------------------------------
 
 let timeSeriesData = [];
+let tractoData = [];
 
 const timeslider = document.querySelector('#timeslider');
 const timevalue = document.querySelector('#timevalue');
+const opacityslider = document.querySelector('#opacityslider');
 
 timeslider.addEventListener('input', (e) => {
   const activeDataset = timeSeriesData[Number(e.target.value)];
@@ -185,23 +261,55 @@ timeslider.addEventListener('input', (e) => {
   }
 });
 
+opacityslider.addEventListener('input', (e) => {
+  const activeDataset = timeSeriesData[Number(timeslider.value)]
+  setVisibleDataset(activeDataset)
+});
+
 toggleNames.forEach((ToggleButton) => {
   document.querySelector(`.${ToggleButton}`).addEventListener('click', (e) => {
     var activeDataset = timeSeriesData[Number(timeslider.value)];
     
-    const toSet = !toggleNames[ToggleButton]
-    toggleNames[ToggleButton] = toSet
-    var tag = ""
-    if (ToggleButton == 'CorticalToggle') {tag = 'cor_'};
-    if (ToggleButton == 'SubCorticalToggle') {tag = 'sub_'};
-    if (ToggleButton == 'TractographyToggle') {tag = 'tra_'};
-    console.log(tag)
-    for (let idx = 0; idx < textureNames.length; idx++) {
-      const buttonName = textureNames[idx]
-      if (buttonName.slice(0, 4) != tag) {continue}
+    if (ToggleButton == 'CorticalToggle') {
+      const tag = 'cor_'
+      const toSet = !toggleNames[ToggleButton]
+      toggleNames[ToggleButton] = toSet
 
-      isTextured[buttonName] = !toSet
-      document.querySelector(`.${buttonName}`).checked = toSet
+      for (let idx = 0; idx < textureNames.length; idx++) {
+        const buttonName = textureNames[idx]
+        if (buttonName.slice(0, 4) != tag) {continue}
+  
+        isTextured[buttonName] = !toSet
+        document.querySelector(`.${buttonName}`).checked = toSet
+      };
+    };
+
+    if (ToggleButton == 'SubCorticalToggle')  {
+      const tag = 'AG_'
+      const toSet = !toggleNames[ToggleButton]
+      toggleNames[ToggleButton] = toSet
+
+      for (let idx = 0; idx < textureNames.length; idx++) {
+        const buttonName = textureNames[idx]
+        if (buttonName.slice(0, 3) != tag) {continue}
+  
+        isTextured[buttonName] = !toSet
+        document.querySelector(`.${buttonName}`).checked = toSet
+      };
+    };
+    
+    if (ToggleButton == 'TractographyToggle') {
+      const tag = 'asso_'
+      const toSet = toggleNames[ToggleButton]
+      toggleNames[ToggleButton] = !toSet
+
+      for (let idx = 0; idx < tractoNames.length; idx++) {
+        const buttonName = tractoNames[idx]
+        if (buttonName.slice(0, 5) != tag) {continue}
+  
+        isShown[buttonName] = !toSet
+        document.querySelector(`.${buttonName}`).checked = !toSet
+      }
     };
 
     // Reset Rendering
@@ -242,6 +350,13 @@ textureNames.forEach((propertyName) => {
   });
 });
 
+tractoNames.forEach((propertyName) => {
+  document.querySelector(`.${propertyName}`).addEventListener('input', (e) => {
+    isShown[propertyName] = e.target.checked;
+    setVisibleTractoDataset()
+  });
+});
+
 var originalColor = []
 downloadTimeSeries().then((downloadedData) => {
   timeSeriesData = downloadedData.filter((ds) => getDataTimeStep(ds) !== null);
@@ -251,6 +366,13 @@ downloadTimeSeries().then((downloadedData) => {
     const arr = ds.getPointData().getArrayByName('RGB');
     originalColor.push(arr.getData())
   });
+
+downloadTracto().then((downloadedData) => {
+  tractoData = downloadedData.filter((ds) => getDataTimeStep(ds) !== null);
+  timeSeriesData.sort((a, b) => getDataTimeStep(a) - getDataTimeStep(b));
+  });
+
+
   uiUpdateSlider(timeSeriesData.length);
   timeslider.value = 0;
 
@@ -267,7 +389,9 @@ downloadTimeSeries().then((downloadedData) => {
 // modify objects in your browser's developer console:
 // -----------------------------------------------------------
 
-global.mapper = mapper;
-global.actor = actor;
+global.surfaceMapper = surfaceMapper;
+global.surfaceActor = surfaceActor;
+global.tractoMapperList = tractoMapperList;
+global.tractoActorList = tractoActorList;
 global.renderer = renderer;
 global.renderWindow = renderWindow;

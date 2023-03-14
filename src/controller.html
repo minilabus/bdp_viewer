@@ -3,7 +3,13 @@
   <tr>
     <td>
       <label for="timeslider">Time step:</label>
-      <input id="timeslider" type="range" min="0" max="1" step="1" />
+      <input id="timeslider" type="range" min="0" max="1" step="1"/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <label for="opacityslider">Opacity:</label>
+      <input id="opacityslider" type="range" min="0" max="10" step="1" value="10" />
     </td>
   </tr>
   <tr>
@@ -158,17 +164,28 @@
 
 <table style="display: none" name="sub-cortical">
   <tr>
-    <td>ZzZ</td>
+    <td>AG_MFG</td>
     <td colspan="3">
-      <input class='ZzZ' type="checkbox" />
+      <input class='AG_MFG' type="checkbox" />
     </td>
   </tr>
   <tr>
-    <td>Show White</td>
+    <td>AG_SPG</td>
     <td colspan="3">
-      <input class='CorW' type="checkbox" />
+      <input class='AG_SPG' type="checkbox" />
     </td>
   </tr>
+  <tr>
+    <td>AG_PoCG</td>
+    <td colspan="3">
+      <input class='AG_PoCG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>AG_PrCG</td>
+    <td colspan="3">
+      <input class='AG_PrCG' type="checkbox" />
+    </td>
   <tr>
     <td>(Un)Toggle All</td>
     <td colspan="3">
@@ -181,15 +198,75 @@
 
 <table style="display: none" name="tractography">
   <tr>
-    <td>zZz</td>
+    <td>AGWM_IFGWM_R</td>
     <td colspan="3">
-      <input class='zZz' type="checkbox" />
+      <input class='asso_dorsal_AGWM_IFGWM_R' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>AGWM_MFGWM_R</td>
+    <td colspan="3">
+      <input class='asso_dorsal_AGWM_MFGWM_R' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>AGWM_SFGWM_R</td>
+    <td colspan="3">
+      <input class='asso_ventral_AGWM_SFGWM_R' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>AGWM_PrCGWM_R</td>
+    <td colspan="3">
+      <input class='asso_dorsal_AGWM_PrCGWM_R' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>AGWM_ITGWM_R</td>
+    <td colspan="3">
+      <input class='asso_short_AGWM_ITGWM_R' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>AGWM_MTGWM_R</td>
+    <td colspan="3">
+      <input class='asso_short_AGWM_MTGWM_R' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>AGWM_STGWM_R</td>
+    <td colspan="3">
+      <input class='asso_short_AGWM_STGWM_R' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>AGWM_SPGWM_R</td>
+    <td colspan="3">
+      <input class='asso_short_AGWM_SPGWM_R' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>AGWM_SMGWM_R</td>
+    <td colspan="3">
+      <input class='asso_short_AGWM_SMGWM_R' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>AGWM_PoCG_R</td>
+    <td colspan="3">
+      <input class='asso_short_AGWM_PoCG_R' type="checkbox" />
     </td>
   </tr>
   <tr>
     <td>(Un)Toggle All</td>
     <td colspan="3">
       <button class='TractographyToggle' type="button">Click Me!</button>
+    </td>
+  </tr>
+  <tr>
+    <td>(Un)Toggle Color</td>
+    <td colspan="3">
+      <button class='TractographyColorToggle' type="button">Click Me!</button>
     </td>
   </tr>
 </table>
