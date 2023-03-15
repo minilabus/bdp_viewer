@@ -19,7 +19,7 @@ const { fetchBinary } = vtkHttpDataAccessHelper;
 const BASE_URL = 'https://github.com/minilabus/bdp_data/raw/main/'
 const TIME_FILES = ['sub-01_epo-01', 'sub-01_epo-02', 'sub-01_epo-03',
                     'sub-01_epo-04', 'sub-01_epo-05', 'sub-01_epo-06']
-const COLORMAP = {
+const MESH_COLORMAP = {
   0: [255, 255, 255], // WHITE (FFFFFF)
   1: [142, 250, 0], // AG (8EFA00)
   2: [255, 251, 0], // FrOrb (FFFB00)
@@ -40,16 +40,32 @@ const COLORMAP = {
   17: [0, 144, 81], // SPG (009051)
   18: [4, 51, 255], // STG (0433FF)
   19: [0, 113, 255], // TP (0071FF)
-  20: [255, 147, 0], // MFG (FF9300)
-  21: [0, 144, 81], // SPG (009051)
-  22: [0, 249, 0], // PoCG (00F900)
-  23: [255, 38, 0], // PrCG (FF2600)
+  20: [255, 147, 0], // MFG (FF9300) sub
+  21: [0, 144, 81], // SPG (009051) sub
+  22: [0, 249, 0], // PoCG (00F900) sub
+  23: [255, 38, 0], // PrCG (FF2600) sub
 };
+
+const TRACTO_COLORMAP = {
+  0: [255, 212, 121], // IFG (FFD479)
+  1: [255, 147, 0], // MFG (FF9300)
+  2: [148, 17, 0], // SFG (941100)
+  3: [255, 38, 0], // PrCG (FF2600)
+  4: [118, 214, 255], // ITG (76D6FF)
+  5: [0, 150, 255], // MTG (0096FF)
+  6: [4, 51, 255], // STG (0433FF)
+  7: [0, 144, 81], // SPG (009051)
+  8: [212, 251, 121], // SMG (D4FB79)
+  9: [0, 249, 0], // PoCG (00F900)
+};
+var TractographyColored = false;
+
 // location.reload(true);
 const isToggled = {
   'CorticalToggle': true,
   'SubCorticalToggle': true,
-  'TractographyToggle': true
+  'TractographyToggle': true,
+  'TractographyColorToggle': true
 }
 
 const isTextured = {
@@ -80,7 +96,6 @@ const isTextured = {
 }
 
 const isShown = {
-  'asso_dorsal_AGWM_IFGWM_R': false,
   'asso_dorsal_AGWM_IFGWM_R': false,
   'asso_dorsal_AGWM_MFGWM_R': false,
   'asso_ventral_AGWM_SFGWM_R': false,
@@ -190,16 +205,16 @@ function getDataTimeStep(vtkObj) {
 }
 
 function setVisibleDataset(ds) {
-  const oriColors = originalColor[Number(timeslider.value)]
+  const oriColors = originalMeshColor[Number(timeslider.value)]
   const oriAnnot = annotData[Number(timeslider.value)]
   const rgbaArray = new Uint8Array((oriAnnot.length - 1) * 3);
 
   for (let idx = 0; idx < oriAnnot.length; idx++) {
     const isCurrOn = isTextured[textureNames[oriAnnot[idx]]]
     if (!isCurrOn) {
-      rgbaArray[(idx * 3)] = COLORMAP[oriAnnot[idx].toString()][0];
-      rgbaArray[(idx * 3) + 1] = COLORMAP[oriAnnot[idx].toString()][1];
-      rgbaArray[(idx * 3) + 2] = COLORMAP[oriAnnot[idx].toString()][2];
+      rgbaArray[(idx * 3)] = MESH_COLORMAP[oriAnnot[idx].toString()][0];
+      rgbaArray[(idx * 3) + 1] = MESH_COLORMAP[oriAnnot[idx].toString()][1];
+      rgbaArray[(idx * 3) + 2] = MESH_COLORMAP[oriAnnot[idx].toString()][2];
     }
     else {
       rgbaArray[(idx * 3)] = oriColors[(idx * 3)];
@@ -218,15 +233,22 @@ function setVisibleTractoDataset() {
   for (let idx = 0; idx < tractoNames.length; idx++) {
     tractoMapperList[idx].setInputData(tractoData[idx]);
     const isCurrOn = isShown[tractoNames[idx]]
-    console.log(isCurrOn)
-    if (isCurrOn) {
-      tractoActorList[idx].setVisibility(1)
-    }
-    else {
-      tractoActorList[idx].setVisibility(0)
-    }
-    renderWindow.render();
+    tractoActorList[idx].setVisibility(isCurrOn)
+
+    tractoMapperList[idx].setScalarVisibility(!TractographyColored);
+    tractoActorList[idx].getProperty().setColor(TRACTO_COLORMAP[idx][0] / 255,
+      TRACTO_COLORMAP[idx][1] / 255,
+      TRACTO_COLORMAP[idx][2] / 255)
+
+    // console.log(isCurrOn)
+    // if (isCurrOn) {
+    //   tractoActorList[idx].setVisibility(1)
+    // }
+    // else {
+    //   tractoActorList[idx].setVisibility(0)
+    // }
   }
+  renderWindow.render();
 }
 
 // -----------------------------------------------------------
@@ -312,6 +334,10 @@ toggleNames.forEach((ToggleButton) => {
       }
     };
 
+    if (ToggleButton == 'TractographyColorToggle') {
+      TractographyColored = !TractographyColored
+    };
+
     // Reset Rendering
     if (timeslider.value == 0) {activeDataset = timeSeriesData[1]}
     else {activeDataset = timeSeriesData[Number(timeslider.value) - 1]}
@@ -357,21 +383,15 @@ tractoNames.forEach((propertyName) => {
   });
 });
 
-var originalColor = []
+var originalMeshColor = []
 downloadTimeSeries().then((downloadedData) => {
   timeSeriesData = downloadedData.filter((ds) => getDataTimeStep(ds) !== null);
   timeSeriesData.sort((a, b) => getDataTimeStep(a) - getDataTimeStep(b));
 
   timeSeriesData.forEach((ds) => {
     const arr = ds.getPointData().getArrayByName('RGB');
-    originalColor.push(arr.getData())
+    originalMeshColor.push(arr.getData())
   });
-
-downloadTracto().then((downloadedData) => {
-  tractoData = downloadedData.filter((ds) => getDataTimeStep(ds) !== null);
-  timeSeriesData.sort((a, b) => getDataTimeStep(a) - getDataTimeStep(b));
-  });
-
 
   uiUpdateSlider(timeSeriesData.length);
   timeslider.value = 0;
@@ -382,6 +402,17 @@ downloadTracto().then((downloadedData) => {
 
   setVisibleDataset(timeSeriesData[0]);
   timevalue.innerText = getDataTimeStep(timeSeriesData[0]);
+});
+
+var originalTractoColor = []
+downloadTracto().then((downloadedData) => {
+  tractoData = downloadedData.filter((ds) => getDataTimeStep(ds) !== null);
+  timeSeriesData.sort((a, b) => getDataTimeStep(a) - getDataTimeStep(b));
+
+  timeSeriesData.forEach((ds) => {
+    const arr = ds.getPointData().getArrayByName('RGB');
+    originalTractoColor.push(arr.getData())
+  });
 });
 
 // -----------------------------------------------------------
