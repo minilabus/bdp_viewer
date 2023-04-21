@@ -18,7 +18,8 @@ const { fetchBinary } = vtkHttpDataAccessHelper;
 
 const BASE_URL = 'https://github.com/minilabus/bdp_data/raw/main/'
 const TIME_FILES = ['sub-01_epo-01', 'sub-01_epo-02', 'sub-01_epo-03',
-                    'sub-01_epo-04', 'sub-01_epo-05', 'sub-01_epo-06']
+                    'sub-01_epo-04', 'sub-01_epo-05', 'sub-01_epo-06',
+                    'sub-01_epo-07']
 const MESH_COLORMAP = {
   0: [255, 255, 255], // WHITE (FFFFFF)
   1: [142, 250, 0], // AG (8EFA00)
@@ -142,9 +143,11 @@ for (var i = 0; i < tractoNames.length; i++) {
   tractoMapperList.push(tractoMapper)
   const tractoActor = vtkActor.newInstance();
   tractoActor.setMapper(tractoMapper);
+  tractoActor.setPosition(0.0, 0.05, 0)
   tractoActorList.push(tractoActor)
 }
 
+surfaceActor.setPosition(0.0, 0.05, 0)
 renderer.addActor(surfaceActor);
 for (var i = 0; i < tractoNames.length; i++) {
   renderer.addActor(tractoActorList[i]);
@@ -239,14 +242,6 @@ function setVisibleTractoDataset() {
     tractoActorList[idx].getProperty().setColor(TRACTO_COLORMAP[idx][0] / 255,
       TRACTO_COLORMAP[idx][1] / 255,
       TRACTO_COLORMAP[idx][2] / 255)
-
-    // console.log(isCurrOn)
-    // if (isCurrOn) {
-    //   tractoActorList[idx].setVisibility(1)
-    // }
-    // else {
-    //   tractoActorList[idx].setVisibility(0)
-    // }
   }
   renderWindow.render();
 }
@@ -397,8 +392,8 @@ downloadTimeSeries().then((downloadedData) => {
   timeslider.value = 0;
 
   // set up camera
-  renderer.getActiveCamera().setPosition(0.40, -0., 0.)
-  renderer.getActiveCamera().setViewUp(0.1, 0.3, 1.)
+  renderer.getActiveCamera().setPosition(0.45, 0., 0.)
+  renderer.getActiveCamera().setViewUp(0, 0, 1)
 
   setVisibleDataset(timeSeriesData[0]);
   timevalue.innerText = getDataTimeStep(timeSeriesData[0]);

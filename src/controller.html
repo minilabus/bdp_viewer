@@ -32,46 +32,11 @@
 <!-- PANEL ABOUT CORTICAL -->
 
   <table style="display: ''" name="cortical">
+
   <tr>
-    <td>Angular Gyrus</td>
+    <td>Superior Frontal Gyrus</td>
     <td colspan="3">
-      <input class='cor_AG' type="checkbox" />
-    </td>
-  </tr>
-  <tr>
-    <td>Frontal Orbital Cortex</td>
-    <td colspan="3">
-      <input class='cor_FrOrb' type="checkbox" />
-    </td>
-  </tr>
-  <tr>
-    <td>Fusiform Gyrus</td>
-    <td colspan="3">
-      <input class='cor_FuG' type="checkbox" />
-    </td>
-  </tr>
-  <tr>
-    <td>Inferior Frontal Gyrus</td>
-    <td colspan="3">
-      <input class='cor_IFG' type="checkbox" />
-    </td>
-  </tr>
-  <tr>
-    <td>Inferior Occipital Gyrus</td>
-    <td colspan="3">
-      <input class='cor_IOG' type="checkbox" />
-    </td>
-  </tr>
-  <tr>
-    <td>Inferior Temporal Gyrus</td>
-    <td colspan="3">
-      <input class='cor_ITG' type="checkbox" />
-    </td>
-  </tr>
-  <tr>
-    <td>Lingual Gyrus</td>
-    <td colspan="3">
-      <input class='cor_LG' type="checkbox" />
+      <input class='cor_SFG' type="checkbox" />
     </td>
   </tr>
   <tr>
@@ -81,9 +46,54 @@
     </td>
   </tr>
   <tr>
-    <td>Middle Occipital Gyrus</td>
+    <td>Inferior Frontal Gyrus</td>
     <td colspan="3">
-      <input class='cor_MOG' type="checkbox" />
+      <input class='cor_IFG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>Frontal Orbital Cortex</td>
+    <td colspan="3">
+      <input class='cor_FrOrb' type="checkbox" />
+    </td>
+  </tr>
+
+  <tr>
+    <td>Precentral Gyrus</td>
+    <td colspan="3">
+      <input class='cor_PrCG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>Postcentral Gyrus</td>
+    <td colspan="3">
+      <input class='cor_PoCG' type="checkbox" />
+    </td>
+  </tr>
+
+  <tr>
+    <td>Supramarginal Gyrus</td>
+    <td colspan="3">
+      <input class='cor_SMG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>Angular Gyrus</td>
+    <td colspan="3">
+      <input class='cor_AG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>Superior Parietal Gyrus</td>
+    <td colspan="3">
+      <input class='cor_SPG' type="checkbox" />
+    </td>
+  </tr>
+
+  <tr>
+    <td>Superior Temporal Gyrus</td>
+    <td colspan="3">
+      <input class='cor_STG' type="checkbox" />
     </td>
   </tr>
   <tr>
@@ -93,35 +103,37 @@
     </td>
   </tr>
   <tr>
+    <td>Inferior Temporal Gyrus</td>
+    <td colspan="3">
+      <input class='cor_ITG' type="checkbox" />
+    </td>
+  </tr>
+
+  <tr>
+    <td>Temporal Pole</td>
+    <td colspan="3">
+      <input class='cor_TP' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
     <td>Parahippocampal Gyrus</td>
     <td colspan="3">
       <input class='cor_PHG' type="checkbox" />
     </td>
   </tr>
   <tr>
-    <td>Postcentral Gyrus</td>
+    <td>Fusiform Gyrus</td>
     <td colspan="3">
-      <input class='cor_PoCG' type="checkbox" />
+      <input class='cor_FuG' type="checkbox" />
     </td>
   </tr>
   <tr>
-    <td>Precentral Gyrus</td>
+    <td>Lingual Gyrus</td>
     <td colspan="3">
-      <input class='cor_PrCG' type="checkbox" />
+      <input class='cor_LG' type="checkbox" />
     </td>
   </tr>
-  <tr>
-    <td>Superior Frontal Gyrus</td>
-    <td colspan="3">
-      <input class='cor_SFG' type="checkbox" />
-    </td>
-  </tr>
-  <tr>
-    <td>Supramarginal Gyrus</td>
-    <td colspan="3">
-      <input class='cor_SMG' type="checkbox" />
-    </td>
-  </tr>
+
   <tr>
     <td>Superior Occipital Gyrus</td>
     <td colspan="3">
@@ -129,23 +141,18 @@
     </td>
   </tr>
   <tr>
-    <td>Superior Parietal Gyrus</td>
+    <td>Middle Occipital Gyrus</td>
     <td colspan="3">
-      <input class='cor_SPG' type="checkbox" />
+      <input class='cor_MOG' type="checkbox" />
     </td>
   </tr>
   <tr>
-    <td>Superior Temporal Gyrus</td>
+    <td>Inferior Occipital Gyrus</td>
     <td colspan="3">
-      <input class='cor_STG' type="checkbox" />
+      <input class='cor_IOG' type="checkbox" />
     </td>
   </tr>
-  <tr>
-    <td>Temporal Pole</td>
-    <td colspan="3">
-      <input class='cor_TP' type="checkbox" />
-    </td>
-  </tr>
+
   <tr>
     <td>Show White</td>
     <td colspan="3">
@@ -164,15 +171,21 @@
 
 <table style="display: none" name="sub-cortical">
   <tr>
+    <td>AG to Superior Temporal Gyrus</td>
+    <td colspan="3">
+      <input class='AG_SPG' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
     <td>AG to Middle Frontal Gyrus</td>
     <td colspan="3">
       <input class='AG_MFG' type="checkbox" />
     </td>
   </tr>
   <tr>
-    <td>AG to Superior Temporal Gyrus</td>
+    <td>AG to Precentral</td>
     <td colspan="3">
-      <input class='AG_SPG' type="checkbox" />
+      <input class='AG_PrCG' type="checkbox" />
     </td>
   </tr>
   <tr>
@@ -181,11 +194,6 @@
       <input class='AG_PoCG' type="checkbox" />
     </td>
   </tr>
-  <tr>
-    <td>AG to Precentral</td>
-    <td colspan="3">
-      <input class='AG_PrCG' type="checkbox" />
-    </td>
   <tr>
     <td>(Un)Toggle All</td>
     <td colspan="3">
@@ -197,10 +205,11 @@
 <!-- PANEL ABOUT TRACTOGRAPHY -->
 
 <table style="display: none" name="tractography">
+
   <tr>
-    <td>AG to Inferior Frontal Gyrus</td>
+    <td>AG to Superior Frontal Gyrus</td>
     <td colspan="3">
-      <input class='asso_dorsal_AGWM_IFGWM_R' type="checkbox" />
+      <input class='asso_ventral_AGWM_SFGWM_R' type="checkbox" />
     </td>
   </tr>
   <tr>
@@ -210,11 +219,12 @@
     </td>
   </tr>
   <tr>
-    <td>AG to Superior Frontal Gyrus</td>
+    <td>AG to Inferior Frontal Gyrus</td>
     <td colspan="3">
-      <input class='asso_ventral_AGWM_SFGWM_R' type="checkbox" />
+      <input class='asso_dorsal_AGWM_IFGWM_R' type="checkbox" />
     </td>
   </tr>
+
   <tr>
     <td>AG to Precentral Gyrus</td>
     <td colspan="3">
@@ -222,27 +232,9 @@
     </td>
   </tr>
   <tr>
-    <td>AG to Inferior Temporal Gyrus</td>
+    <td>AG to Postcentral Gyrus</td>
     <td colspan="3">
-      <input class='asso_short_AGWM_ITGWM_R' type="checkbox" />
-    </td>
-  </tr>
-  <tr>
-    <td>AG to Middle Temporal Gyrus</td>
-    <td colspan="3">
-      <input class='asso_short_AGWM_MTGWM_R' type="checkbox" />
-    </td>
-  </tr>
-  <tr>
-    <td>AG to Superior Temporal Gyrus</td>
-    <td colspan="3">
-      <input class='asso_short_AGWM_STGWM_R' type="checkbox" />
-    </td>
-  </tr>
-  <tr>
-    <td>AG to Superior Parietal Gyrus</td>
-    <td colspan="3">
-      <input class='asso_short_AGWM_SPGWM_R' type="checkbox" />
+      <input class='asso_short_AGWM_PoCG_R' type="checkbox" />
     </td>
   </tr>
   <tr>
@@ -252,11 +244,30 @@
     </td>
   </tr>
   <tr>
-    <td>AG to Postcentral Gyrus</td>
+    <td>AG to Superior Parietal Gyrus</td>
     <td colspan="3">
-      <input class='asso_short_AGWM_PoCG_R' type="checkbox" />
+      <input class='asso_short_AGWM_SPGWM_R' type="checkbox" />
     </td>
   </tr>
+  <tr>
+    <td>AG to Superior Temporal Gyrus</td>
+    <td colspan="3">
+      <input class='asso_short_AGWM_STGWM_R' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>AG to Middle Temporal Gyrus</td>
+    <td colspan="3">
+      <input class='asso_short_AGWM_MTGWM_R' type="checkbox" />
+    </td>
+  </tr>
+  <tr>
+    <td>AG to Inferior Temporal Gyrus</td>
+    <td colspan="3">
+      <input class='asso_short_AGWM_ITGWM_R' type="checkbox" />
+    </td>
+  </tr>
+
   <tr>
     <td>(Un)Toggle All</td>
     <td colspan="3">
