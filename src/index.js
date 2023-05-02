@@ -9,17 +9,20 @@ import vtkFullScreenRenderWindow from '@kitware/vtk.js/Rendering/Misc/FullScreen
 import vtkXMLPolyDataReader from '@kitware/vtk.js/IO/XML/XMLPolyDataReader';
 import vtkMapper from '@kitware/vtk.js/Rendering/Core/Mapper';
 import vtkHttpDataAccessHelper from '@kitware/vtk.js/IO/Core/DataAccessHelper/HttpDataAccessHelper';
-
+import vtkAnnotatedCubeActor from '@kitware/vtk.js/Rendering/Core/AnnotatedCubeActor';
+import vtkOrientationMarkerWidget from '@kitware/vtk.js/Interaction/Widgets/OrientationMarkerWidget';
 
 import controlPanel from './controller.html';
+import style from './style.module.css';
 
 const { fetchBinary } = vtkHttpDataAccessHelper;
 
 
 const BASE_URL = 'https://github.com/minilabus/bdp_data/raw/main/'
 const TIME_FILES = ['sub-01_epo-01', 'sub-01_epo-02', 'sub-01_epo-03',
-                    'sub-01_epo-04', 'sub-01_epo-05', 'sub-01_epo-06',
-                    'sub-01_epo-07']
+  'sub-01_epo-04', 'sub-01_epo-05', 'sub-01_epo-06',
+  'sub-01_epo-07', 'sub-01_epo-08', 'sub-01_epo-09',
+  'sub-01_epo-10', 'sub-01_epo-11',]
 const MESH_COLORMAP = {
   0: [255, 255, 255], // WHITE (FFFFFF)
   1: [142, 250, 0], // AG (8EFA00)
@@ -112,8 +115,7 @@ const tractoNames = Object.keys(isShown)
 const textureNames = Object.keys(isTextured)
 const toggleNames = Object.keys(isToggled)
 
-// document.getElementById("yourSubTableId").display = "";  //Show the table
-// document.getElementById("yourSubTableId").display = "none";  //Hide the table
+
 // ----------------------------------------------------------------------------
 // Standard rendering code setup
 // ----------------------------------------------------------------------------
@@ -123,6 +125,60 @@ const fullScreenRenderer = vtkFullScreenRenderWindow.newInstance({
 });
 const renderer = fullScreenRenderer.getRenderer();
 const renderWindow = fullScreenRenderer.getRenderWindow();
+
+const axes = vtkAnnotatedCubeActor.newInstance();
+axes.setDefaultStyle({
+  fontStyle: 'bold',
+  fontFamily: 'Arial',
+  fontColor: 'black',
+  fontSizeScale: (res) => res / 2,
+  edgeThickness: 0.1,
+  edgeColor: 'white',
+  resolution: 400,
+});
+axes.setXPlusFaceProperty({
+  text: 'R',
+  faceRotation: 90,
+  faceColor: '#FF3357',
+});
+axes.setXMinusFaceProperty({
+  text: 'L',
+  faceRotation: 270,
+  faceColor: '#FF3357',
+});
+axes.setYPlusFaceProperty({
+  text: 'A',
+  faceRotation: 180,
+  faceColor: '#A4BE5C',
+});
+axes.setYMinusFaceProperty({
+  text: 'P',
+  faceRotation: 0,
+  faceColor: '#A4BE5C',
+});
+axes.setZPlusFaceProperty({
+  text: 'S',
+  faceRotation: 90,
+  faceColor: '#3368FF',
+});
+axes.setZMinusFaceProperty({
+  text: 'I',
+  faceRotation: 90,
+  faceColor: '#3368FF',
+});
+
+// create orientation widget
+const orientationWidget = vtkOrientationMarkerWidget.newInstance({
+  actor: axes,
+  interactor: renderWindow.getInteractor(),
+});
+orientationWidget.setEnabled(true);
+orientationWidget.setViewportCorner(
+  vtkOrientationMarkerWidget.Corners.BOTTOM_RIGHT
+);
+orientationWidget.setViewportSize(0.15);
+orientationWidget.setMinPixelSize(100);
+orientationWidget.setMaxPixelSize(300);
 
 // Surface
 const surfaceMapper = vtkMapper.newInstance();
@@ -286,7 +342,7 @@ opacityslider.addEventListener('input', (e) => {
 toggleNames.forEach((ToggleButton) => {
   document.querySelector(`.${ToggleButton}`).addEventListener('click', (e) => {
     var activeDataset = timeSeriesData[Number(timeslider.value)];
-    
+
     if (ToggleButton == 'CorticalToggle') {
       const tag = 'cor_'
       const toSet = !toggleNames[ToggleButton]
@@ -294,27 +350,27 @@ toggleNames.forEach((ToggleButton) => {
 
       for (let idx = 0; idx < textureNames.length; idx++) {
         const buttonName = textureNames[idx]
-        if (buttonName.slice(0, 4) != tag) {continue}
-  
+        if (buttonName.slice(0, 4) != tag) { continue }
+
         isTextured[buttonName] = !toSet
         document.querySelector(`.${buttonName}`).checked = toSet
       };
     };
 
-    if (ToggleButton == 'SubCorticalToggle')  {
+    if (ToggleButton == 'SubCorticalToggle') {
       const tag = 'AG_'
       const toSet = !toggleNames[ToggleButton]
       toggleNames[ToggleButton] = toSet
 
       for (let idx = 0; idx < textureNames.length; idx++) {
         const buttonName = textureNames[idx]
-        if (buttonName.slice(0, 3) != tag) {continue}
-  
+        if (buttonName.slice(0, 3) != tag) { continue }
+
         isTextured[buttonName] = !toSet
         document.querySelector(`.${buttonName}`).checked = toSet
       };
     };
-    
+
     if (ToggleButton == 'TractographyToggle') {
       const tag = 'asso_'
       const toSet = toggleNames[ToggleButton]
@@ -322,8 +378,8 @@ toggleNames.forEach((ToggleButton) => {
 
       for (let idx = 0; idx < tractoNames.length; idx++) {
         const buttonName = tractoNames[idx]
-        if (buttonName.slice(0, 5) != tag) {continue}
-  
+        if (buttonName.slice(0, 5) != tag) { continue }
+
         isShown[buttonName] = !toSet
         document.querySelector(`.${buttonName}`).checked = !toSet
       }
@@ -334,13 +390,13 @@ toggleNames.forEach((ToggleButton) => {
     };
 
     // Reset Rendering
-    if (timeslider.value == 0) {activeDataset = timeSeriesData[1]}
-    else {activeDataset = timeSeriesData[Number(timeslider.value) - 1]}
+    if (timeslider.value == 0) { activeDataset = timeSeriesData[1] }
+    else { activeDataset = timeSeriesData[Number(timeslider.value) - 1] }
     setVisibleDataset(activeDataset);
     activeDataset = timeSeriesData[Number(timeslider.value)]
     setVisibleDataset(activeDataset);
   })
-  
+
 });
 
 const representationSelector = document.querySelector('.representations');
@@ -359,11 +415,11 @@ textureNames.forEach((propertyName) => {
     var activeDataset = timeSeriesData[Number(timeslider.value)];
 
     // Reset Rendering
-    if (timeslider.value == 0) {activeDataset = timeSeriesData[1]}
-    else {activeDataset = timeSeriesData[Number(timeslider.value) - 1]}
+    if (timeslider.value == 0) { activeDataset = timeSeriesData[1] }
+    else { activeDataset = timeSeriesData[Number(timeslider.value) - 1] }
     setVisibleDataset(activeDataset);
     activeDataset = timeSeriesData[Number(timeslider.value)]
-    
+
     isTextured[propertyName] = !e.target.checked;
     if (activeDataset) {
       setVisibleDataset(activeDataset);

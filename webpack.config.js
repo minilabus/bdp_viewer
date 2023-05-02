@@ -8,6 +8,10 @@ module.exports = {
         test: /\.html$/i,
         loader: "html-loader",
       },
+      {
+        test: /\.css$/i,
+        loader: "css-loader",
+      },
     ],
   },
 };
