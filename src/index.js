@@ -1,5 +1,3 @@
-import '@kitware/vtk.js/favicon';
-
 // Load the rendering pieces we want to use (for both WebGL and WebGPU)
 import '@kitware/vtk.js/Rendering/Profiles/Geometry';
 
@@ -13,10 +11,11 @@ import vtkAnnotatedCubeActor from '@kitware/vtk.js/Rendering/Core/AnnotatedCubeA
 import vtkOrientationMarkerWidget from '@kitware/vtk.js/Interaction/Widgets/OrientationMarkerWidget';
 
 import controlPanel from './controller.html';
-import style from './style.module.css';
-
 const { fetchBinary } = vtkHttpDataAccessHelper;
 
+// -----------------------------------------------------------
+// Global variables
+// -----------------------------------------------------------
 
 const BASE_URL = 'https://github.com/minilabus/bdp_data/raw/main/'
 const TIME_FILES = ['sub-01_epo-01', 'sub-01_epo-02', 'sub-01_epo-03',
@@ -64,7 +63,6 @@ const TRACTO_COLORMAP = {
 };
 var TractographyColored = false;
 
-// location.reload(true);
 const isToggled = {
   'CorticalToggle': true,
   'SubCorticalToggle': true,
@@ -120,11 +118,171 @@ const toggleNames = Object.keys(isToggled)
 // Standard rendering code setup
 // ----------------------------------------------------------------------------
 
-const fullScreenRenderer = vtkFullScreenRenderWindow.newInstance({
-  background: [0, 0, 0],
+const canv = document.createElement('canvas');
+canv.id = 'loading';
+
+const body = document.body
+const html = document.documentElement;
+
+const height = Math.max(body.scrollHeight, body.offsetHeight,
+  html.clientHeight, html.scrollHeight, html.offsetHeight);
+const width = Math.max(body.scrollWidth, body.offsetWidth,
+  html.clientWidth, html.scrollWidth, html.offsetWidth);
+canv.height = height;
+canv.width = width;
+document.body.appendChild(canv);
+
+const canvas = document.getElementById('loading');
+const ctx = canvas.getContext('2d');
+
+ctx.fillStyle = 'black';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+const fsize = width / 20
+ctx.font = `bold ${fsize}px Arial`;
+ctx.fillStyle = "white";
+ctx.textAlign = "center";
+ctx.fillText("Dowloading, please be patient...",
+  canvas.width / 2, canvas.height / 2);
+
+// -----------------------------------------------------------
+// Data fetcher
+// -----------------------------------------------------------
+
+async function getAnnotData(i) {
+  const response = await fetch(BASE_URL + TIME_FILES[i] + '.txt')
+  const data = await response.text()
+  return data.split('\n').map(Number)
+}
+
+const annotData = []
+for (var i = 0; i < TIME_FILES.length; i++) {
+  let tmpData = await getAnnotData(i)
+  const vtkAnnotArray = new Uint8Array(tmpData)
+  annotData.push(vtkAnnotArray)
+}
+
+function downloadTimeSeries() {
+  return Promise.all(
+    TIME_FILES.map((filename) =>
+      fetchBinary(BASE_URL + filename + '.xml').then((binary) => {
+        const reader = vtkXMLPolyDataReader.newInstance();
+        reader.parseAsArrayBuffer(binary);
+        return reader.getOutputData(0);
+      })
+    )
+  );
+}
+
+function downloadTracto() {
+  return Promise.all(
+    tractoNames.map((filename) =>
+      fetchBinary(BASE_URL + 'tracto/' + filename + '.xml').then((binary) => {
+        const reader = vtkXMLPolyDataReader.newInstance();
+        reader.parseAsArrayBuffer(binary);
+        return reader.getOutputData(0);
+      })
+    )
+  );
+}
+
+function getDataTimeStep(vtkObj) {
+  const arr = vtkObj.getFieldData().getArrayByName('TimeValue');
+  if (arr) {
+    return arr.getData()[0];
+  }
+  return null;
+}
+
+// Fake first
+const binary = await fetchBinary(BASE_URL + 'sub-01_epo-01.xml')
+const reader = vtkXMLPolyDataReader.newInstance();
+reader.parseAsArrayBuffer(binary);
+var timeSeriesData = [reader.getOutputData(0)]
+const arr = timeSeriesData[0].getPointData().getArrayByName('RGB');
+var originalMeshColor = [arr.getData()]
+
+var tractoData = [];
+var originalTractoColor = []
+downloadTracto().then((downloadedData) => {
+  tractoData = downloadedData.filter((ds) => getDataTimeStep(ds) !== null);
+  timeSeriesData.sort((a, b) => getDataTimeStep(a) - getDataTimeStep(b));
+
+  timeSeriesData.forEach((ds) => {
+    const arr = ds.getPointData().getArrayByName('RGB');
+    originalTractoColor.push(arr.getData())
+  });
 });
+
+// Launch the scene
+// Surface
+const surfaceMapper = vtkMapper.newInstance();
+surfaceMapper.setInputData(vtkPolyData.newInstance());
+const surfaceActor = vtkActor.newInstance();
+surfaceActor.getProperty().setInterpolationToPhong()
+surfaceActor.getProperty().setAmbient(0.1)
+surfaceActor.getProperty().setBackfaceCulling(true)
+surfaceActor.setMapper(surfaceMapper);
+
+// Tractography
+var tractoMapperList = []
+var tractoActorList = []
+for (var i = 0; i < tractoNames.length; i++) {
+  const tractoMapper = vtkMapper.newInstance();
+  tractoMapper.setInputData(vtkPolyData.newInstance());
+  tractoMapperList.push(tractoMapper)
+  const tractoActor = vtkActor.newInstance();
+  tractoActor.setMapper(tractoMapper);
+  tractoActor.setPosition(0.0, 0.05, 0)
+  tractoActorList.push(tractoActor)
+}
+
+function uiUpdateSlider(max) {
+  const timeslider = document.querySelector('#timeslider');
+  timeslider.min = 0;
+  timeslider.max = max
+  timeslider.step = 1;
+}
+
+function init_scene() {
+  uiUpdateSlider(0);
+  timeslider.value = 0;
+
+  // set up camera
+  renderer.getActiveCamera().setPosition(0.45, 0., 0.)
+  renderer.getActiveCamera().setViewUp(0, 0, 1)
+
+  setVisibleDataset(timeSeriesData[0]);
+  timevalue.innerText = getDataTimeStep(timeSeriesData[0]);
+
+  // Off-center
+  surfaceActor.setPosition(0.0, 0.05, 0)
+  renderer.addActor(surfaceActor);
+  for (var i = 0; i < tractoNames.length; i++) {
+    renderer.addActor(tractoActorList[i]);
+  }
+  renderWindow.render();
+}
+
+const fullScreenRenderer = vtkFullScreenRenderWindow.newInstance({
+  background: [0, 0, 0] });
+document.body.removeChild(canv);
+
 const renderer = fullScreenRenderer.getRenderer();
 const renderWindow = fullScreenRenderer.getRenderWindow();
+
+global.surfaceMapper = surfaceMapper;
+global.surfaceActor = surfaceActor;
+global.tractoMapperList = tractoMapperList;
+global.tractoActorList = tractoActorList;
+global.renderer = renderer;
+global.renderWindow = renderWindow;
+
+// UI initialization
+fullScreenRenderer.addController(controlPanel);
+const timeslider = document.querySelector('#timeslider');
+const timevalue = document.querySelector('#timevalue');
+const opacityslider = document.querySelector('#opacityslider');
+init_scene()
 
 const axes = vtkAnnotatedCubeActor.newInstance();
 axes.setDefaultStyle({
@@ -180,88 +338,24 @@ orientationWidget.setViewportSize(0.15);
 orientationWidget.setMinPixelSize(100);
 orientationWidget.setMaxPixelSize(300);
 
-// Surface
-const surfaceMapper = vtkMapper.newInstance();
-surfaceMapper.setInputData(vtkPolyData.newInstance());
-const surfaceActor = vtkActor.newInstance();
-surfaceActor.getProperty().setInterpolationToPhong()
-// surfaceActor.getProperty().setSpecular(0.2)
-surfaceActor.getProperty().setAmbient(0.1)
-surfaceActor.getProperty().setBackfaceCulling(true)
-surfaceActor.setMapper(surfaceMapper);
+// Download the remaining data
+downloadTimeSeries().then((downloadedData) => {
+  timeSeriesData = downloadedData.filter((ds) => getDataTimeStep(ds) !== null);
+  timeSeriesData.sort((a, b) => getDataTimeStep(a) - getDataTimeStep(b));
 
-// Tractography
-var tractoMapperList = []
-var tractoActorList = []
-for (var i = 0; i < tractoNames.length; i++) {
-  const tractoMapper = vtkMapper.newInstance();
-  tractoMapper.setInputData(vtkPolyData.newInstance());
-  tractoMapperList.push(tractoMapper)
-  const tractoActor = vtkActor.newInstance();
-  tractoActor.setMapper(tractoMapper);
-  tractoActor.setPosition(0.0, 0.05, 0)
-  tractoActorList.push(tractoActor)
-}
+  // var originalMeshColor = []
+  timeSeriesData.forEach((ds) => {
+    const arr = ds.getPointData().getArrayByName('RGB');
+    if (originalMeshColor[0].length != arr.getData().length) {
+      originalMeshColor.push(arr.getData())
+    }
+  });
+  uiUpdateSlider(timeSeriesData.length-1);
+});
 
-surfaceActor.setPosition(0.0, 0.05, 0)
-renderer.addActor(surfaceActor);
-for (var i = 0; i < tractoNames.length; i++) {
-  renderer.addActor(tractoActorList[i]);
-}
-renderer.resetCamera();
-renderWindow.render();
-// ----------------------------------------------------------------------------
-// Example code
-// ----------------------------------------------------------------------------
-// Download a series of VTP files in a time series, sort them by time, and
-// then display them in a playback series.
-// ----------------------------------------------------------------------------
-
-
-async function getAnnotData(i) {
-  const response = await fetch(BASE_URL + TIME_FILES[i] + '.txt')
-  const data = await response.text()
-  return data.split('\n').map(Number)
-}
-
-const annotData = []
-for (var i = 0; i < TIME_FILES.length; i++) {
-  let tmpData = await getAnnotData(i)
-  const vtkAnnotArray = new Uint8Array(tmpData)
-  annotData.push(vtkAnnotArray)
-}
-
-function downloadTimeSeries() {
-  return Promise.all(
-    TIME_FILES.map((filename) =>
-      fetchBinary(BASE_URL + filename + '.xml').then((binary) => {
-        const reader = vtkXMLPolyDataReader.newInstance();
-        reader.parseAsArrayBuffer(binary);
-        return reader.getOutputData(0);
-      })
-    )
-  );
-}
-
-function downloadTracto() {
-  return Promise.all(
-    tractoNames.map((filename) =>
-      fetchBinary(BASE_URL + 'tracto/' + filename + '.xml').then((binary) => {
-        const reader = vtkXMLPolyDataReader.newInstance();
-        reader.parseAsArrayBuffer(binary);
-        return reader.getOutputData(0);
-      })
-    )
-  );
-}
-
-function getDataTimeStep(vtkObj) {
-  const arr = vtkObj.getFieldData().getArrayByName('TimeValue');
-  if (arr) {
-    return arr.getData()[0];
-  }
-  return null;
-}
+// -----------------------------------------------------------
+// Rendering and visibility
+// -----------------------------------------------------------
 
 function setVisibleDataset(ds) {
   const oriColors = originalMeshColor[Number(timeslider.value)]
@@ -305,26 +399,6 @@ function setVisibleTractoDataset() {
 // -----------------------------------------------------------
 // UI control handling
 // -----------------------------------------------------------
-
-fullScreenRenderer.addController(controlPanel);
-
-function uiUpdateSlider(max) {
-  const timeslider = document.querySelector('#timeslider');
-  timeslider.min = 0;
-  timeslider.max = max - 1;
-  timeslider.step = 1;
-}
-
-// -----------------------------------------------------------
-// example code logic
-// -----------------------------------------------------------
-
-let timeSeriesData = [];
-let tractoData = [];
-
-const timeslider = document.querySelector('#timeslider');
-const timevalue = document.querySelector('#timevalue');
-const opacityslider = document.querySelector('#opacityslider');
 
 timeslider.addEventListener('input', (e) => {
   const activeDataset = timeSeriesData[Number(e.target.value)];
@@ -433,47 +507,3 @@ tractoNames.forEach((propertyName) => {
     setVisibleTractoDataset()
   });
 });
-
-var originalMeshColor = []
-downloadTimeSeries().then((downloadedData) => {
-  timeSeriesData = downloadedData.filter((ds) => getDataTimeStep(ds) !== null);
-  timeSeriesData.sort((a, b) => getDataTimeStep(a) - getDataTimeStep(b));
-
-  timeSeriesData.forEach((ds) => {
-    const arr = ds.getPointData().getArrayByName('RGB');
-    originalMeshColor.push(arr.getData())
-  });
-
-  uiUpdateSlider(timeSeriesData.length);
-  timeslider.value = 0;
-
-  // set up camera
-  renderer.getActiveCamera().setPosition(0.45, 0., 0.)
-  renderer.getActiveCamera().setViewUp(0, 0, 1)
-
-  setVisibleDataset(timeSeriesData[0]);
-  timevalue.innerText = getDataTimeStep(timeSeriesData[0]);
-});
-
-var originalTractoColor = []
-downloadTracto().then((downloadedData) => {
-  tractoData = downloadedData.filter((ds) => getDataTimeStep(ds) !== null);
-  timeSeriesData.sort((a, b) => getDataTimeStep(a) - getDataTimeStep(b));
-
-  timeSeriesData.forEach((ds) => {
-    const arr = ds.getPointData().getArrayByName('RGB');
-    originalTractoColor.push(arr.getData())
-  });
-});
-
-// -----------------------------------------------------------
-// Make some variables global so that you can inspect and
-// modify objects in your browser's developer console:
-// -----------------------------------------------------------
-
-global.surfaceMapper = surfaceMapper;
-global.surfaceActor = surfaceActor;
-global.tractoMapperList = tractoMapperList;
-global.tractoActorList = tractoActorList;
-global.renderer = renderer;
-global.renderWindow = renderWindow;
