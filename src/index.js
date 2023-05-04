@@ -1,27 +1,37 @@
 // Load the rendering pieces we want to use (for both WebGL and WebGPU)
-import '@kitware/vtk.js/Rendering/Profiles/Geometry';
+import "@kitware/vtk.js/Rendering/Profiles/Geometry";
 
-import vtkActor from '@kitware/vtk.js/Rendering/Core/Actor';
-import vtkPolyData from '@kitware/vtk.js/Common/DataModel/PolyData';
-import vtkFullScreenRenderWindow from '@kitware/vtk.js/Rendering/Misc/FullScreenRenderWindow';
-import vtkXMLPolyDataReader from '@kitware/vtk.js/IO/XML/XMLPolyDataReader';
-import vtkMapper from '@kitware/vtk.js/Rendering/Core/Mapper';
-import vtkHttpDataAccessHelper from '@kitware/vtk.js/IO/Core/DataAccessHelper/HttpDataAccessHelper';
-import vtkAnnotatedCubeActor from '@kitware/vtk.js/Rendering/Core/AnnotatedCubeActor';
-import vtkOrientationMarkerWidget from '@kitware/vtk.js/Interaction/Widgets/OrientationMarkerWidget';
+import vtkActor from "@kitware/vtk.js/Rendering/Core/Actor";
+import vtkPolyData from "@kitware/vtk.js/Common/DataModel/PolyData";
+import vtkFullScreenRenderWindow from "@kitware/vtk.js/Rendering/Misc/FullScreenRenderWindow";
+import vtkXMLPolyDataReader from "@kitware/vtk.js/IO/XML/XMLPolyDataReader";
+import vtkMapper from "@kitware/vtk.js/Rendering/Core/Mapper";
+import vtkHttpDataAccessHelper from "@kitware/vtk.js/IO/Core/DataAccessHelper/HttpDataAccessHelper";
+import vtkAnnotatedCubeActor from "@kitware/vtk.js/Rendering/Core/AnnotatedCubeActor";
+import vtkOrientationMarkerWidget from "@kitware/vtk.js/Interaction/Widgets/OrientationMarkerWidget";
 
-import controlPanel from './controller.html';
+import controlPanel from "./controller.html";
 const { fetchBinary } = vtkHttpDataAccessHelper;
 
 // -----------------------------------------------------------
 // Global variables
 // -----------------------------------------------------------
 
-const BASE_URL = 'https://github.com/minilabus/bdp_data/raw/main/'
-const TIME_FILES = ['sub-01_epo-01', 'sub-01_epo-02', 'sub-01_epo-03',
-  'sub-01_epo-04', 'sub-01_epo-05', 'sub-01_epo-06',
-  'sub-01_epo-07', 'sub-01_epo-08', 'sub-01_epo-09',
-  'sub-01_epo-10', 'sub-01_epo-11',]
+const BASE_URL = "https://github.com/minilabus/bdp_data/raw/main/";
+const TIME_FILES = [
+  "sub-01_epo-01",
+  "sub-01_epo-02",
+  "sub-01_epo-03",
+  "sub-01_epo-04",
+  "sub-01_epo-05",
+  "sub-01_epo-06",
+  "sub-01_epo-07",
+  "sub-01_epo-08",
+  "sub-01_epo-09",
+  "sub-01_epo-10",
+  "sub-01_epo-11",
+];
+
 const MESH_COLORMAP = {
   0: [255, 255, 255], // WHITE (FFFFFF)
   1: [142, 250, 0], // AG (8EFA00)
@@ -64,107 +74,129 @@ const TRACTO_COLORMAP = {
 var TractographyColored = false;
 
 const isToggled = {
-  'CorticalToggle': true,
-  'SubCorticalToggle': true,
-  'TractographyToggle': true,
-  'TractographyColorToggle': true
-}
+  CorticalToggle: true,
+  SubCorticalToggle: true,
+  TractographyToggle: true,
+  TractographyColorToggle: true,
+};
 
 const isTextured = {
-  'cor_White': true,
-  'cor_AG': true,
-  'cor_FrOrb': true,
-  'cor_FuG': true,
-  'cor_IFG': true,
-  'cor_IOG': true,
-  'cor_ITG': true,
-  'cor_LG': true,
-  'cor_MFG': true,
-  'cor_MOG': true,
-  'cor_MTG': true,
-  'cor_PHG': true,
-  'cor_PoCG': true,
-  'cor_PrCG': true,
-  'cor_SFG': true,
-  'cor_SMG': true,
-  'cor_SOG': true,
-  'cor_SPG': true,
-  'cor_STG': true,
-  'cor_TP': true,
-  'AG_MFG': true,
-  'AG_SPG': true,
-  'AG_PoCG': true,
-  'AG_PrCG': true,
-}
+  cor_White: true,
+  cor_AG: true,
+  cor_FrOrb: true,
+  cor_FuG: true,
+  cor_IFG: true,
+  cor_IOG: true,
+  cor_ITG: true,
+  cor_LG: true,
+  cor_MFG: true,
+  cor_MOG: true,
+  cor_MTG: true,
+  cor_PHG: true,
+  cor_PoCG: true,
+  cor_PrCG: true,
+  cor_SFG: true,
+  cor_SMG: true,
+  cor_SOG: true,
+  cor_SPG: true,
+  cor_STG: true,
+  cor_TP: true,
+  AG_MFG: true,
+  AG_SPG: true,
+  AG_PoCG: true,
+  AG_PrCG: true,
+};
 
 const isShown = {
-  'asso_dorsal_AGWM_IFGWM_R': false,
-  'asso_dorsal_AGWM_MFGWM_R': false,
-  'asso_ventral_AGWM_SFGWM_R': false,
-  'asso_dorsal_AGWM_PrCGWM_R': false,
-  'asso_short_AGWM_ITGWM_R': false,
-  'asso_short_AGWM_MTGWM_R': false,
-  'asso_short_AGWM_STGWM_R': false,
-  'asso_short_AGWM_SPGWM_R': false,
-  'asso_short_AGWM_SMGWM_R': false,
-  'asso_short_AGWM_PoCG_R': false
-}
-const tractoNames = Object.keys(isShown)
-const textureNames = Object.keys(isTextured)
-const toggleNames = Object.keys(isToggled)
-
+  asso_dorsal_AGWM_IFGWM_R: false,
+  asso_dorsal_AGWM_MFGWM_R: false,
+  asso_ventral_AGWM_SFGWM_R: false,
+  asso_dorsal_AGWM_PrCGWM_R: false,
+  asso_short_AGWM_ITGWM_R: false,
+  asso_short_AGWM_MTGWM_R: false,
+  asso_short_AGWM_STGWM_R: false,
+  asso_short_AGWM_SPGWM_R: false,
+  asso_short_AGWM_SMGWM_R: false,
+  asso_short_AGWM_PoCG_R: false,
+};
+const tractoNames = Object.keys(isShown);
+const textureNames = Object.keys(isTextured);
+const toggleNames = Object.keys(isToggled);
 
 // ----------------------------------------------------------------------------
 // Standard rendering code setup
 // ----------------------------------------------------------------------------
 
-const canv = document.createElement('canvas');
-canv.id = 'loading';
+const canv = document.createElement("canvas");
+canv.id = "loading";
 
-const body = document.body
+const body = document.body;
 const html = document.documentElement;
 
-const height = Math.max(body.scrollHeight, body.offsetHeight,
-  html.clientHeight, html.scrollHeight, html.offsetHeight);
-const width = Math.max(body.scrollWidth, body.offsetWidth,
-  html.clientWidth, html.scrollWidth, html.offsetWidth);
+const height = Math.max(
+  body.scrollHeight,
+  body.offsetHeight,
+  html.clientHeight,
+  html.scrollHeight,
+  html.offsetHeight
+);
+const width = Math.max(
+  body.scrollWidth,
+  body.offsetWidth,
+  html.clientWidth,
+  html.scrollWidth,
+  html.offsetWidth
+);
 canv.height = height;
 canv.width = width;
 document.body.appendChild(canv);
 
-const canvas = document.getElementById('loading');
-const ctx = canvas.getContext('2d');
+const canvas = document.getElementById("loading");
+const ctx = canvas.getContext("2d");
 
-ctx.fillStyle = 'black';
+ctx.fillStyle = "black";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
-const fsize = width / 20
+var fsize = width / 20;
 ctx.font = `bold ${fsize}px Arial`;
 ctx.fillStyle = "white";
 ctx.textAlign = "center";
-ctx.fillText("Dowloading, please be patient...",
-  canvas.width / 2, canvas.height / 2);
+ctx.fillText(
+  "Downloading, please be patient...",
+  canvas.width / 2,
+  canvas.height / 2
+);
+
+fsize = width / 40;
+ctx.font = `${fsize}px Arial`;
+ctx.fillStyle = "white";
+ctx.textAlign = "center";
+ctx.fillText(
+  "Will be slow for the first 10-20 seconds, buttons won't work until then.",
+  canvas.width / 2,
+  canvas.height*2 / 3
+);
 
 // -----------------------------------------------------------
 // Data fetcher
 // -----------------------------------------------------------
 
 async function getAnnotData(i) {
-  const response = await fetch(BASE_URL + TIME_FILES[i] + '.txt')
-  const data = await response.text()
-  return data.split('\n').map(Number)
+  const response = await fetch(BASE_URL + TIME_FILES[i] + ".txt");
+  const data = await response.text();
+  return data.split("\n").map(Number);
 }
 
-const annotData = []
+const annotData = [];
 for (var i = 0; i < TIME_FILES.length; i++) {
-  let tmpData = await getAnnotData(i)
-  const vtkAnnotArray = new Uint8Array(tmpData)
-  annotData.push(vtkAnnotArray)
+  let tmpData = await getAnnotData(i);
+  const vtkAnnotArray = new Uint8Array(tmpData);
+  annotData.push(vtkAnnotArray);
 }
 
 function downloadTimeSeries() {
   return Promise.all(
     TIME_FILES.map((filename) =>
-      fetchBinary(BASE_URL + filename + '.xml').then((binary) => {
+      fetchBinary(BASE_URL + filename + ".xml").then((binary) => {
         const reader = vtkXMLPolyDataReader.newInstance();
         reader.parseAsArrayBuffer(binary);
         return reader.getOutputData(0);
@@ -176,7 +208,7 @@ function downloadTimeSeries() {
 function downloadTracto() {
   return Promise.all(
     tractoNames.map((filename) =>
-      fetchBinary(BASE_URL + 'tracto/' + filename + '.xml').then((binary) => {
+      fetchBinary(BASE_URL + "tracto/" + filename + ".xml").then((binary) => {
         const reader = vtkXMLPolyDataReader.newInstance();
         reader.parseAsArrayBuffer(binary);
         return reader.getOutputData(0);
@@ -186,7 +218,7 @@ function downloadTracto() {
 }
 
 function getDataTimeStep(vtkObj) {
-  const arr = vtkObj.getFieldData().getArrayByName('TimeValue');
+  const arr = vtkObj.getFieldData().getArrayByName("TimeValue");
   if (arr) {
     return arr.getData()[0];
   }
@@ -194,52 +226,51 @@ function getDataTimeStep(vtkObj) {
 }
 
 // Fake first
-const binary = await fetchBinary(BASE_URL + 'sub-01_epo-01.xml')
+const binary = await fetchBinary(BASE_URL + "sub-01_epo-01.xml");
 const reader = vtkXMLPolyDataReader.newInstance();
 reader.parseAsArrayBuffer(binary);
-var timeSeriesData = [reader.getOutputData(0)]
-const arr = timeSeriesData[0].getPointData().getArrayByName('RGB');
-var originalMeshColor = [arr.getData()]
+var timeSeriesData = [reader.getOutputData(0)];
+const arr = timeSeriesData[0].getPointData().getArrayByName("RGB");
+var originalMeshColor = [arr.getData()];
 
 var tractoData = [];
-var originalTractoColor = []
+var originalTractoColor = [];
 downloadTracto().then((downloadedData) => {
   tractoData = downloadedData.filter((ds) => getDataTimeStep(ds) !== null);
   timeSeriesData.sort((a, b) => getDataTimeStep(a) - getDataTimeStep(b));
 
   timeSeriesData.forEach((ds) => {
-    const arr = ds.getPointData().getArrayByName('RGB');
-    originalTractoColor.push(arr.getData())
+    const arr = ds.getPointData().getArrayByName("RGB");
+    originalTractoColor.push(arr.getData());
   });
 });
 
 // Launch the scene
-// Surface
 const surfaceMapper = vtkMapper.newInstance();
 surfaceMapper.setInputData(vtkPolyData.newInstance());
 const surfaceActor = vtkActor.newInstance();
-surfaceActor.getProperty().setInterpolationToPhong()
-surfaceActor.getProperty().setAmbient(0.1)
-surfaceActor.getProperty().setBackfaceCulling(true)
+surfaceActor.getProperty().setInterpolationToPhong();
+surfaceActor.getProperty().setAmbient(0.1);
+surfaceActor.getProperty().setBackfaceCulling(true);
 surfaceActor.setMapper(surfaceMapper);
 
 // Tractography
-var tractoMapperList = []
-var tractoActorList = []
+var tractoMapperList = [];
+var tractoActorList = [];
 for (var i = 0; i < tractoNames.length; i++) {
   const tractoMapper = vtkMapper.newInstance();
   tractoMapper.setInputData(vtkPolyData.newInstance());
-  tractoMapperList.push(tractoMapper)
+  tractoMapperList.push(tractoMapper);
   const tractoActor = vtkActor.newInstance();
   tractoActor.setMapper(tractoMapper);
-  tractoActor.setPosition(0.0, 0.05, 0)
-  tractoActorList.push(tractoActor)
+  tractoActor.setPosition(0.0, 0.05, 0);
+  tractoActorList.push(tractoActor);
 }
 
 function uiUpdateSlider(max) {
-  const timeslider = document.querySelector('#timeslider');
+  const timeslider = document.querySelector("#timeslider");
   timeslider.min = 0;
-  timeslider.max = max
+  timeslider.max = max;
   timeslider.step = 1;
 }
 
@@ -248,14 +279,14 @@ function init_scene() {
   timeslider.value = 0;
 
   // set up camera
-  renderer.getActiveCamera().setPosition(0.45, 0., 0.)
-  renderer.getActiveCamera().setViewUp(0, 0, 1)
+  renderer.getActiveCamera().setPosition(0.45, 0, 0);
+  renderer.getActiveCamera().setViewUp(0, 0, 1);
 
   setVisibleDataset(timeSeriesData[0]);
   timevalue.innerText = getDataTimeStep(timeSeriesData[0]);
 
   // Off-center
-  surfaceActor.setPosition(0.0, 0.05, 0)
+  surfaceActor.setPosition(0.0, 0.05, 0);
   renderer.addActor(surfaceActor);
   for (var i = 0; i < tractoNames.length; i++) {
     renderer.addActor(tractoActorList[i]);
@@ -264,7 +295,8 @@ function init_scene() {
 }
 
 const fullScreenRenderer = vtkFullScreenRenderWindow.newInstance({
-  background: [0, 0, 0] });
+  background: [0, 0, 0],
+});
 document.body.removeChild(canv);
 
 const renderer = fullScreenRenderer.getRenderer();
@@ -279,50 +311,50 @@ global.renderWindow = renderWindow;
 
 // UI initialization
 fullScreenRenderer.addController(controlPanel);
-const timeslider = document.querySelector('#timeslider');
-const timevalue = document.querySelector('#timevalue');
-const opacityslider = document.querySelector('#opacityslider');
-init_scene()
+const timeslider = document.querySelector("#timeslider");
+const timevalue = document.querySelector("#timevalue");
+const opacityslider = document.querySelector("#opacityslider");
+init_scene();
 
 const axes = vtkAnnotatedCubeActor.newInstance();
 axes.setDefaultStyle({
-  fontStyle: 'bold',
-  fontFamily: 'Arial',
-  fontColor: 'black',
+  fontStyle: "bold",
+  fontFamily: "Arial",
+  fontColor: "black",
   fontSizeScale: (res) => res / 2,
   edgeThickness: 0.1,
-  edgeColor: 'white',
+  edgeColor: "white",
   resolution: 400,
 });
 axes.setXPlusFaceProperty({
-  text: 'R',
+  text: "R",
   faceRotation: 90,
-  faceColor: '#FF3357',
+  faceColor: "#FF3357",
 });
 axes.setXMinusFaceProperty({
-  text: 'L',
+  text: "L",
   faceRotation: 270,
-  faceColor: '#FF3357',
+  faceColor: "#FF3357",
 });
 axes.setYPlusFaceProperty({
-  text: 'A',
+  text: "A",
   faceRotation: 180,
-  faceColor: '#A4BE5C',
+  faceColor: "#A4BE5C",
 });
 axes.setYMinusFaceProperty({
-  text: 'P',
+  text: "P",
   faceRotation: 0,
-  faceColor: '#A4BE5C',
+  faceColor: "#A4BE5C",
 });
 axes.setZPlusFaceProperty({
-  text: 'S',
+  text: "S",
   faceRotation: 90,
-  faceColor: '#3368FF',
+  faceColor: "#3368FF",
 });
 axes.setZMinusFaceProperty({
-  text: 'I',
+  text: "I",
   faceRotation: 90,
-  faceColor: '#3368FF',
+  faceColor: "#3368FF",
 });
 
 // create orientation widget
@@ -345,12 +377,12 @@ downloadTimeSeries().then((downloadedData) => {
 
   // var originalMeshColor = []
   timeSeriesData.forEach((ds) => {
-    const arr = ds.getPointData().getArrayByName('RGB');
+    const arr = ds.getPointData().getArrayByName("RGB");
     if (originalMeshColor[0].length != arr.getData().length) {
-      originalMeshColor.push(arr.getData())
+      originalMeshColor.push(arr.getData());
     }
   });
-  uiUpdateSlider(timeSeriesData.length-1);
+  uiUpdateSlider(timeSeriesData.length - 1);
 });
 
 // -----------------------------------------------------------
@@ -358,25 +390,24 @@ downloadTimeSeries().then((downloadedData) => {
 // -----------------------------------------------------------
 
 function setVisibleDataset(ds) {
-  const oriColors = originalMeshColor[Number(timeslider.value)]
-  const oriAnnot = annotData[Number(timeslider.value)]
+  const oriColors = originalMeshColor[Number(timeslider.value)];
+  const oriAnnot = annotData[Number(timeslider.value)];
   const rgbaArray = new Uint8Array((oriAnnot.length - 1) * 3);
 
   for (let idx = 0; idx < oriAnnot.length; idx++) {
-    const isCurrOn = isTextured[textureNames[oriAnnot[idx]]]
+    const isCurrOn = isTextured[textureNames[oriAnnot[idx]]];
     if (!isCurrOn) {
-      rgbaArray[(idx * 3)] = MESH_COLORMAP[oriAnnot[idx].toString()][0];
-      rgbaArray[(idx * 3) + 1] = MESH_COLORMAP[oriAnnot[idx].toString()][1];
-      rgbaArray[(idx * 3) + 2] = MESH_COLORMAP[oriAnnot[idx].toString()][2];
-    }
-    else {
-      rgbaArray[(idx * 3)] = oriColors[(idx * 3)];
-      rgbaArray[(idx * 3) + 1] = oriColors[(idx * 3) + 1];
-      rgbaArray[(idx * 3) + 2] = oriColors[(idx * 3) + 2];
+      rgbaArray[idx * 3] = MESH_COLORMAP[oriAnnot[idx].toString()][0];
+      rgbaArray[idx * 3 + 1] = MESH_COLORMAP[oriAnnot[idx].toString()][1];
+      rgbaArray[idx * 3 + 2] = MESH_COLORMAP[oriAnnot[idx].toString()][2];
+    } else {
+      rgbaArray[idx * 3] = oriColors[idx * 3];
+      rgbaArray[idx * 3 + 1] = oriColors[idx * 3 + 1];
+      rgbaArray[idx * 3 + 2] = oriColors[idx * 3 + 2];
     }
   }
-  ds.getPointData().getArrayByName('RGB').setData(rgbaArray)
-  setVisibleTractoDataset()
+  ds.getPointData().getArrayByName("RGB").setData(rgbaArray);
+  setVisibleTractoDataset();
   surfaceActor.getProperty().setOpacity(opacityslider.value / 10.0);
   surfaceMapper.setInputData(ds);
   renderWindow.render();
@@ -385,13 +416,17 @@ function setVisibleDataset(ds) {
 function setVisibleTractoDataset() {
   for (let idx = 0; idx < tractoNames.length; idx++) {
     tractoMapperList[idx].setInputData(tractoData[idx]);
-    const isCurrOn = isShown[tractoNames[idx]]
-    tractoActorList[idx].setVisibility(isCurrOn)
+    const isCurrOn = isShown[tractoNames[idx]];
+    tractoActorList[idx].setVisibility(isCurrOn);
 
     tractoMapperList[idx].setScalarVisibility(!TractographyColored);
-    tractoActorList[idx].getProperty().setColor(TRACTO_COLORMAP[idx][0] / 255,
-      TRACTO_COLORMAP[idx][1] / 255,
-      TRACTO_COLORMAP[idx][2] / 255)
+    tractoActorList[idx]
+      .getProperty()
+      .setColor(
+        TRACTO_COLORMAP[idx][0] / 255,
+        TRACTO_COLORMAP[idx][1] / 255,
+        TRACTO_COLORMAP[idx][2] / 255
+      );
   }
   renderWindow.render();
 }
@@ -400,7 +435,7 @@ function setVisibleTractoDataset() {
 // UI control handling
 // -----------------------------------------------------------
 
-timeslider.addEventListener('input', (e) => {
+timeslider.addEventListener("input", (e) => {
   const activeDataset = timeSeriesData[Number(e.target.value)];
   if (activeDataset) {
     setVisibleDataset(activeDataset);
@@ -408,91 +443,108 @@ timeslider.addEventListener('input', (e) => {
   }
 });
 
-opacityslider.addEventListener('input', (e) => {
-  const activeDataset = timeSeriesData[Number(timeslider.value)]
-  setVisibleDataset(activeDataset)
+opacityslider.addEventListener("input", (e) => {
+  const activeDataset = timeSeriesData[Number(timeslider.value)];
+  setVisibleDataset(activeDataset);
 });
 
 toggleNames.forEach((ToggleButton) => {
-  document.querySelector(`.${ToggleButton}`).addEventListener('click', (e) => {
+  document.querySelector(`.${ToggleButton}`).addEventListener("click", (e) => {
     var activeDataset = timeSeriesData[Number(timeslider.value)];
-
-    if (ToggleButton == 'CorticalToggle') {
-      const tag = 'cor_'
-      const toSet = !toggleNames[ToggleButton]
-      toggleNames[ToggleButton] = toSet
-
-      for (let idx = 0; idx < textureNames.length; idx++) {
-        const buttonName = textureNames[idx]
-        if (buttonName.slice(0, 4) != tag) { continue }
-
-        isTextured[buttonName] = !toSet
-        document.querySelector(`.${buttonName}`).checked = toSet
-      };
-    };
-
-    if (ToggleButton == 'SubCorticalToggle') {
-      const tag = 'AG_'
-      const toSet = !toggleNames[ToggleButton]
-      toggleNames[ToggleButton] = toSet
+    if (timeSeriesData.length != TIME_FILES.length) {
+      return;
+    }
+    if (ToggleButton == "CorticalToggle") {
+      const tag = "cor_";
+      const toSet = !toggleNames[ToggleButton];
+      toggleNames[ToggleButton] = toSet;
 
       for (let idx = 0; idx < textureNames.length; idx++) {
-        const buttonName = textureNames[idx]
-        if (buttonName.slice(0, 3) != tag) { continue }
+        const buttonName = textureNames[idx];
+        if (buttonName.slice(0, 4) != tag) {
+          continue;
+        }
 
-        isTextured[buttonName] = !toSet
-        document.querySelector(`.${buttonName}`).checked = toSet
-      };
-    };
+        isTextured[buttonName] = !toSet;
+        document.querySelector(`.${buttonName}`).checked = toSet;
+      }
+    }
 
-    if (ToggleButton == 'TractographyToggle') {
-      const tag = 'asso_'
-      const toSet = toggleNames[ToggleButton]
-      toggleNames[ToggleButton] = !toSet
+    if (ToggleButton == "SubCorticalToggle") {
+      const tag = "AG_";
+      const toSet = !toggleNames[ToggleButton];
+      toggleNames[ToggleButton] = toSet;
+
+      for (let idx = 0; idx < textureNames.length; idx++) {
+        const buttonName = textureNames[idx];
+        if (buttonName.slice(0, 3) != tag) {
+          continue;
+        }
+
+        isTextured[buttonName] = !toSet;
+        document.querySelector(`.${buttonName}`).checked = toSet;
+      }
+    }
+
+    if (ToggleButton == "TractographyToggle") {
+      const tag = "asso_";
+      const toSet = toggleNames[ToggleButton];
+      toggleNames[ToggleButton] = !toSet;
 
       for (let idx = 0; idx < tractoNames.length; idx++) {
-        const buttonName = tractoNames[idx]
-        if (buttonName.slice(0, 5) != tag) { continue }
+        const buttonName = tractoNames[idx];
+        if (buttonName.slice(0, 5) != tag) {
+          continue;
+        }
 
-        isShown[buttonName] = !toSet
-        document.querySelector(`.${buttonName}`).checked = !toSet
+        isShown[buttonName] = !toSet;
+        document.querySelector(`.${buttonName}`).checked = !toSet;
       }
-    };
+    }
 
-    if (ToggleButton == 'TractographyColorToggle') {
-      TractographyColored = !TractographyColored
-    };
+    if (ToggleButton == "TractographyColorToggle") {
+      TractographyColored = !TractographyColored;
+    }
 
     // Reset Rendering
-    if (timeslider.value == 0) { activeDataset = timeSeriesData[1] }
-    else { activeDataset = timeSeriesData[Number(timeslider.value) - 1] }
+    if (timeslider.value == 0) {
+      activeDataset = timeSeriesData[1];
+    } else {
+      activeDataset = timeSeriesData[Number(timeslider.value) - 1];
+    }
     setVisibleDataset(activeDataset);
-    activeDataset = timeSeriesData[Number(timeslider.value)]
+    activeDataset = timeSeriesData[Number(timeslider.value)];
     setVisibleDataset(activeDataset);
-  })
-
+  });
 });
 
-const representationSelector = document.querySelector('.representations');
-representationSelector.addEventListener('change', (e) => {
+const representationSelector = document.querySelector(".representations");
+representationSelector.addEventListener("change", (e) => {
   const newRepValue = Number(e.target.value);
-  const allTables = document.getElementsByTagName("table")
+  const allTables = document.getElementsByTagName("table");
 
-  allTables[1].style.display = "none"
-  allTables[2].style.display = "none"
-  allTables[3].style.display = "none"
-  allTables[newRepValue].style.display = ""
+  allTables[1].style.display = "none";
+  allTables[2].style.display = "none";
+  allTables[3].style.display = "none";
+  allTables[newRepValue].style.display = "";
 });
 
 textureNames.forEach((propertyName) => {
-  document.querySelector(`.${propertyName}`).addEventListener('input', (e) => {
+  document.querySelector(`.${propertyName}`).addEventListener("input", (e) => {
+    if (timeSeriesData.length != TIME_FILES.length) {
+      document.querySelector(`.${propertyName}`).checked = false;
+      return;
+    }
     var activeDataset = timeSeriesData[Number(timeslider.value)];
 
     // Reset Rendering
-    if (timeslider.value == 0) { activeDataset = timeSeriesData[1] }
-    else { activeDataset = timeSeriesData[Number(timeslider.value) - 1] }
+    if (timeslider.value == 0) {
+      activeDataset = timeSeriesData[1];
+    } else {
+      activeDataset = timeSeriesData[Number(timeslider.value) - 1];
+    }
     setVisibleDataset(activeDataset);
-    activeDataset = timeSeriesData[Number(timeslider.value)]
+    activeDataset = timeSeriesData[Number(timeslider.value)];
 
     isTextured[propertyName] = !e.target.checked;
     if (activeDataset) {
@@ -502,8 +554,12 @@ textureNames.forEach((propertyName) => {
 });
 
 tractoNames.forEach((propertyName) => {
-  document.querySelector(`.${propertyName}`).addEventListener('input', (e) => {
+  document.querySelector(`.${propertyName}`).addEventListener("input", (e) => {
+    if (timeSeriesData.length != TIME_FILES.length) {
+      document.querySelector(`.${propertyName}`).checked = false;
+      return;
+    }
     isShown[propertyName] = e.target.checked;
-    setVisibleTractoDataset()
+    setVisibleTractoDataset();
   });
 });
