@@ -50,17 +50,20 @@ const MESH_COLORMAP = {
 };
 
 const TRACTO_COLORMAP = {
-  0: [255, 212, 121], // IFG (FFD479)
-  1: [255, 147, 0], // MFG (FF9300)
-  2: [148, 17, 0], // SFG (941100)
-  3: [255, 38, 0], // PrCG (FF2600)
-  4: [118, 214, 255], // ITG (76D6FF)
-  5: [0, 150, 255], // MTG (0096FF)
-  6: [4, 51, 255], // STG (0433FF)
-  7: [0, 144, 81], // SPG (009051)
-  8: [212, 251, 121], // SMG (D4FB79)
-  9: [0, 249, 0], // PoCG (00F900)
+'asso_AGWM_IFGWM_R': [255, 212, 121],
+'asso_AGWM_IOGWM_R': [255, 138, 216],
+'asso_AGWM_ITGWM_R': [118, 214, 255],
+'asso_AGWM_MFGWM_R': [255, 147, 0],
+'asso_AGWM_MTGWM_R': [0, 150, 255],
+'asso_AGWM_PoCGWM_R': [0, 249, 0],
+'asso_AGWM_PrCGWM_R': [255, 38, 0],
+'asso_AGWM_SMGWM_R': [212, 251, 121],
+'asso_AGWM_SPGWM_R': [0, 144, 81],
+'asso_AGWM_STGWM_R': [4, 51, 255],
+'asso_AGWM_Tpole_R': [0, 113, 255],
 };
+
+
 var TractographyColored = false;
 
 const isToggled = {
@@ -98,17 +101,19 @@ const isTextured = {
 }
 
 const isShown = {
-  'asso_dorsal_AGWM_IFGWM_R': false,
-  'asso_dorsal_AGWM_MFGWM_R': false,
-  'asso_ventral_AGWM_SFGWM_R': false,
-  'asso_dorsal_AGWM_PrCGWM_R': false,
-  'asso_short_AGWM_ITGWM_R': false,
-  'asso_short_AGWM_MTGWM_R': false,
-  'asso_short_AGWM_STGWM_R': false,
-  'asso_short_AGWM_SPGWM_R': false,
-  'asso_short_AGWM_SMGWM_R': false,
-  'asso_short_AGWM_PoCG_R': false
+  'asso_AGWM_IFGWM_R': false,
+  'asso_AGWM_IOGWM_R': false,
+  'asso_AGWM_ITGWM_R': false,
+  'asso_AGWM_MFGWM_R': false,
+  'asso_AGWM_MTGWM_R': false,
+  'asso_AGWM_PoCGWM_R': false,
+  'asso_AGWM_PrCGWM_R': false,
+  'asso_AGWM_SMGWM_R': false,
+  'asso_AGWM_SPGWM_R': false,
+  'asso_AGWM_STGWM_R': false,
+  'asso_AGWM_Tpole_R': false,
 }
+
 const tractoNames = Object.keys(isShown)
 const textureNames = Object.keys(isTextured)
 const toggleNames = Object.keys(isToggled)
@@ -384,14 +389,15 @@ function setVisibleDataset(ds) {
 
 function setVisibleTractoDataset() {
   for (let idx = 0; idx < tractoNames.length; idx++) {
+    var curr_name = tractoNames[idx]
     tractoMapperList[idx].setInputData(tractoData[idx]);
-    const isCurrOn = isShown[tractoNames[idx]]
+    const isCurrOn = isShown[curr_name]
     tractoActorList[idx].setVisibility(isCurrOn)
 
     tractoMapperList[idx].setScalarVisibility(!TractographyColored);
-    tractoActorList[idx].getProperty().setColor(TRACTO_COLORMAP[idx][0] / 255,
-      TRACTO_COLORMAP[idx][1] / 255,
-      TRACTO_COLORMAP[idx][2] / 255)
+    tractoActorList[idx].getProperty().setColor(TRACTO_COLORMAP[curr_name][0] / 255,
+      TRACTO_COLORMAP[curr_name][1] / 255,
+      TRACTO_COLORMAP[curr_name][2] / 255)
   }
   renderWindow.render();
 }
