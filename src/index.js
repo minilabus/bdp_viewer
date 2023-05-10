@@ -1,3 +1,5 @@
+import '@kitware/vtk.js/favicon';
+
 // Load the rendering pieces we want to use (for both WebGL and WebGPU)
 import "@kitware/vtk.js/Rendering/Profiles/Geometry";
 
@@ -12,7 +14,6 @@ import vtkOrientationMarkerWidget from "@kitware/vtk.js/Interaction/Widgets/Orie
 
 import controlPanel from "./controller.html";
 const { fetchBinary } = vtkHttpDataAccessHelper;
-
 // -----------------------------------------------------------
 // Global variables
 // -----------------------------------------------------------
