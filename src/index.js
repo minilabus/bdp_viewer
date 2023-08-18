@@ -19,18 +19,19 @@ const { fetchBinary } = vtkHttpDataAccessHelper;
 // -----------------------------------------------------------
 
 const BASE_URL = "https://github.com/minilabus/bdp_data/raw/main/";
+const BASE_SUBJ = "sub-02_";
 const TIME_FILES = [
-  "sub-01_epo-01",
-  "sub-01_epo-02",
-  "sub-01_epo-03",
-  "sub-01_epo-04",
-  "sub-01_epo-05",
-  "sub-01_epo-06",
-  "sub-01_epo-07",
-  "sub-01_epo-08",
-  "sub-01_epo-09",
-  "sub-01_epo-10",
-  "sub-01_epo-11",
+  BASE_SUBJ+"epo-01",
+  BASE_SUBJ+"epo-02",
+  BASE_SUBJ+"epo-03",
+  BASE_SUBJ+"epo-04",
+  BASE_SUBJ+"epo-05",
+  BASE_SUBJ+"epo-06",
+  BASE_SUBJ+"epo-07",
+  BASE_SUBJ+"epo-08",
+  BASE_SUBJ+"epo-09",
+  BASE_SUBJ+"epo-10",
+  BASE_SUBJ+"epo-11",
 ];
 
 const MESH_COLORMAP = {
@@ -61,17 +62,17 @@ const MESH_COLORMAP = {
 };
 
 const TRACTO_COLORMAP = {
-'asso_AGWM_IFGWM_R': [255, 212, 121],
-'asso_AGWM_IOGWM_R': [255, 138, 216],
-'asso_AGWM_ITGWM_R': [118, 214, 255],
-'asso_AGWM_MFGWM_R': [255, 147, 0],
-'asso_AGWM_MTGWM_R': [0, 150, 255],
-'asso_AGWM_PoCGWM_R': [0, 249, 0],
-'asso_AGWM_PrCGWM_R': [255, 38, 0],
-'asso_AGWM_SMGWM_R': [212, 251, 121],
-'asso_AGWM_SPGWM_R': [0, 144, 81],
-'asso_AGWM_STGWM_R': [4, 51, 255],
-'asso_AGWM_Tpole_R': [0, 113, 255],
+'asso_AGWM_IFGWM': [255, 212, 121],
+// 'asso_AGWM_IOGWM': [255, 138, 216],
+'asso_AGWM_ITGWM': [118, 214, 255],
+'asso_AGWM_MFGWM': [255, 147, 0],
+'asso_AGWM_MTGWM': [0, 150, 255],
+// 'asso_AGWM_PoCGWM': [0, 249, 0],
+'asso_AGWM_PrCGWM': [255, 38, 0],
+'asso_AGWM_SMGWM': [212, 251, 121],
+'asso_AGWM_SPGWM': [0, 144, 81],
+// 'asso_AGWM_STGWM': [4, 51, 255],
+'asso_AGWM_Tpole': [0, 113, 255],
 };
 
 
@@ -112,17 +113,17 @@ const isTextured = {
 };
 
 const isShown = {
-  'asso_AGWM_IFGWM_R': false,
-  'asso_AGWM_IOGWM_R': false,
-  'asso_AGWM_ITGWM_R': false,
-  'asso_AGWM_MFGWM_R': false,
-  'asso_AGWM_MTGWM_R': false,
-  'asso_AGWM_PoCGWM_R': false,
-  'asso_AGWM_PrCGWM_R': false,
-  'asso_AGWM_SMGWM_R': false,
-  'asso_AGWM_SPGWM_R': false,
-  'asso_AGWM_STGWM_R': false,
-  'asso_AGWM_Tpole_R': false,
+  'asso_AGWM_IFGWM': false,
+  // 'asso_AGWM_IOGWM': false,
+  'asso_AGWM_ITGWM': false,
+  'asso_AGWM_MFGWM': false,
+  'asso_AGWM_MTGWM': false,
+  // 'asso_AGWM_PoCGWM': false,
+  'asso_AGWM_PrCGWM': false,
+  'asso_AGWM_SMGWM': false,
+  'asso_AGWM_SPGWM': false,
+  // 'asso_AGWM_STGWM': false,
+  'asso_AGWM_Tpole': false,
 }
 
 const tractoNames = Object.keys(isShown)
@@ -215,7 +216,7 @@ function downloadTimeSeries() {
 function downloadTracto() {
   return Promise.all(
     tractoNames.map((filename) =>
-      fetchBinary(BASE_URL + "tracto/" + filename + ".xml").then((binary) => {
+      fetchBinary(BASE_URL + BASE_SUBJ + "tracto/" + filename + ".xml").then((binary) => {
         const reader = vtkXMLPolyDataReader.newInstance();
         reader.parseAsArrayBuffer(binary);
         return reader.getOutputData(0);
@@ -233,7 +234,7 @@ function getDataTimeStep(vtkObj) {
 }
 
 // Fake first
-const binary = await fetchBinary(BASE_URL + "sub-01_epo-01.xml");
+const binary = await fetchBinary(BASE_URL + BASE_SUBJ + "epo-01.xml");
 const reader = vtkXMLPolyDataReader.newInstance();
 reader.parseAsArrayBuffer(binary);
 var timeSeriesData = [reader.getOutputData(0)];
@@ -261,6 +262,12 @@ surfaceActor.getProperty().setAmbient(0.1);
 surfaceActor.getProperty().setBackfaceCulling(true);
 surfaceActor.setMapper(surfaceMapper);
 
+// Support left and right
+var FLIP = 1;
+if (BASE_SUBJ == "sub-02_") {
+  var FLIP = -1;
+}
+
 // Tractography
 var tractoMapperList = [];
 var tractoActorList = [];
@@ -270,7 +277,7 @@ for (var i = 0; i < tractoNames.length; i++) {
   tractoMapperList.push(tractoMapper);
   const tractoActor = vtkActor.newInstance();
   tractoActor.setMapper(tractoMapper);
-  tractoActor.setPosition(0.0, 0.05, 0);
+  tractoActor.setPosition(0.0, 0.05*FLIP, 0);
   tractoActorList.push(tractoActor);
 }
 
@@ -286,14 +293,15 @@ function init_scene() {
   timeslider.value = 0;
 
   // set up camera
-  renderer.getActiveCamera().setPosition(0.45, 0, 0);
+  renderer.getActiveCamera().setPosition(0.45*FLIP, 0, 0);
   renderer.getActiveCamera().setViewUp(0, 0, 1);
+
 
   setVisibleDataset(timeSeriesData[0]);
   timevalue.innerText = getDataTimeStep(timeSeriesData[0]);
 
   // Off-center
-  surfaceActor.setPosition(0.0, 0.05, 0);
+  surfaceActor.setPosition(0.0, 0.05*FLIP, 0);
   renderer.addActor(surfaceActor);
   for (var i = 0; i < tractoNames.length; i++) {
     renderer.addActor(tractoActorList[i]);
