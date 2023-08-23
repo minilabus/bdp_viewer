@@ -19,7 +19,7 @@ const { fetchBinary } = vtkHttpDataAccessHelper;
 // -----------------------------------------------------------
 
 const BASE_URL = "https://github.com/minilabus/bdp_data/raw/main/";
-const BASE_SUBJ = "sub-02_";
+const BASE_SUBJ = "sub-01_";
 const TIME_FILES = [
   BASE_SUBJ+"epo-01",
   BASE_SUBJ+"epo-02",
@@ -264,8 +264,10 @@ surfaceActor.setMapper(surfaceMapper);
 
 // Support left and right
 var FLIP = 1;
+var SHIFT = 0.05;
 if (BASE_SUBJ == "sub-02_") {
   var FLIP = -1;
+  var SHIFT = 0.01;
 }
 
 // Tractography
@@ -277,7 +279,7 @@ for (var i = 0; i < tractoNames.length; i++) {
   tractoMapperList.push(tractoMapper);
   const tractoActor = vtkActor.newInstance();
   tractoActor.setMapper(tractoMapper);
-  tractoActor.setPosition(0.0, 0.05*FLIP, 0);
+  tractoActor.setPosition(0.0, SHIFT*FLIP, 0);
   tractoActorList.push(tractoActor);
 }
 
@@ -301,7 +303,7 @@ function init_scene() {
   timevalue.innerText = getDataTimeStep(timeSeriesData[0]);
 
   // Off-center
-  surfaceActor.setPosition(0.0, 0.05*FLIP, 0);
+  surfaceActor.setPosition(0.0, SHIFT*FLIP, 0);
   renderer.addActor(surfaceActor);
   for (var i = 0; i < tractoNames.length; i++) {
     renderer.addActor(tractoActorList[i]);
