@@ -21,7 +21,7 @@ const {
 // -----------------------------------------------------------
 
 const BASE_URL = "https://github.com/minilabus/bdp_data/raw/main/";
-const BASE_SUBJ = "sub-02_";
+const BASE_SUBJ = "sub-01_";
 const TIME_FILES = [];
 for (let i = 1; i <= 11; i++) {
     const paddedNumber = String(i).padStart(2, '0');
@@ -49,10 +49,17 @@ const MESH_COLORMAP = {
     17: [0, 144, 81], // SPG (009051)
     18: [4, 51, 255], // STG (0433FF)
     19: [0, 113, 255], // TP (0071FF)
-    20: [255, 147, 0], // MFG (FF9300) sub
-    21: [0, 144, 81], // SPG (009051) sub
-    22: [0, 249, 0], // PoCG (00F900) sub
-    23: [255, 38, 0], // PrCG (FF2600) sub
+    20: [255, 212, 121], // AG-IFG (8EFA00)
+    21: [118, 214, 255], // AG-ITG (76D6FF)
+    22: [255, 147, 0], // AG-MFG (FF9300)
+    23: [0, 150, 255], // AG-MTG (0096FF)
+    24: [0, 249, 0], // AG-PoCG (00F900)
+    25: [255, 38, 0], // AG-PrCG (FF2600)
+    26: [148, 17, 0], // AG-SFG (941100)
+    27: [212, 251, 121], // AG-SMG (D4FB79)
+    28: [0, 144, 81], // AG-SPG (009051)
+    29: [4, 51, 255], // AG-STG (0433FF)
+    30: [0, 113, 255], // AG-TP (0071FF)
 };
 
 const TRACTO_COLORMAP = {
@@ -78,30 +85,37 @@ const isToggled = {
 };
 
 const isTextured = {
-    cor_White: true,
-    cor_AG: true,
-    cor_FrOrb: true,
-    cor_FuG: true,
-    cor_IFG: true,
-    cor_IOG: true,
-    cor_ITG: true,
-    cor_LG: true,
-    cor_MFG: true,
-    cor_MOG: true,
-    cor_MTG: true,
-    cor_PHG: true,
-    cor_PoCG: true,
-    cor_PrCG: true,
-    cor_SFG: true,
-    cor_SMG: true,
-    cor_SOG: true,
-    cor_SPG: true,
-    cor_STG: true,
-    cor_TP: true,
-    AG_MFG: true,
-    AG_SPG: true,
-    AG_PoCG: true,
-    AG_PrCG: true,
+    'cor_White': true,
+    'cor_AG': true,
+    'cor_FrOrb': true,
+    'cor_FuG': true,
+    'cor_IFG': true,
+    'cor_IOG': true,
+    'cor_ITG': true,
+    'cor_LG': true,
+    'cor_MFG': true,
+    'cor_MOG': true,
+    'cor_MTG': true,
+    'cor_PHG': true,
+    'cor_PoCG': true,
+    'cor_PrCG': true,
+    'cor_SFG': true,
+    'cor_SMG': true,
+    'cor_SOG': true,
+    'cor_SPG': true,
+    'cor_STG': true,
+    'cor_TP': true,
+    'AG_IFG': true,
+    'AG_ITG': true,
+    'AG_MFG': true,
+    'AG_MTG': true,
+    'AG_PoCG': true,
+    'AG_PrCG': true,
+    'AG_SFG': true,
+    'AG_SMG': true,
+    'AG_SPG': true,
+    'AG_STG': true,
+    'AG_TP': true,
 };
 
 const isShown = {
@@ -125,6 +139,11 @@ const availableTractography = {
         "asso_AGWM_SPGWM", "asso_AGWM_STGWM", "asso_AGWM_MTGWM",
         "asso_AGWM_ITGWM"
     ]
+};
+
+const availableSubcortical = {
+    "sub-01_": ["AG_IFG", "AG_MFG", "AG_MTG", "AG_PoCG", "AG_PrCG", "AG_SMG", "AG_SPG"],
+    "sub-02_": ["AG_ITG", "AG_MFG", "AG_MTG", "AG_SFG", "AG_SMG", "AG_SPG", "AG_STG"],
 };
 
 const tractoNames = availableTractography[BASE_SUBJ]
@@ -491,10 +510,9 @@ toggleNames.forEach((ToggleButton) => {
 
             for (let idx = 0; idx < textureNames.length; idx++) {
                 const buttonName = textureNames[idx];
-                if (buttonName.slice(0, 3) != tag) {
+                if (buttonName.slice(0, 3) != tag || ! availableSubcortical[BASE_SUBJ].includes(buttonName)) {
                     continue;
                 }
-
                 isTextured[buttonName] = !toSet;
                 document.querySelector(`.${buttonName}`).checked = toSet;
             }
@@ -600,3 +618,24 @@ Object.keys(isShown).forEach((propertyName) => {
         buttonElement.removeAttribute("disabled");
     }
 });
+
+Object.keys(isTextured).forEach((propertyName) => {
+    const tag = "AG_"
+    if (propertyName.slice(0, 3) == tag && !availableSubcortical[BASE_SUBJ].includes(propertyName)) {
+        const buttonElement = document.querySelector(`.${propertyName}`);
+        buttonElement.setAttribute("disabled", "disabled");
+        buttonElement.style.color = "lightgray";
+
+        // Navigate up to closest <tr> and then find the first <td> within it
+        const parentTr = buttonElement.closest('tr');
+        const firstTd = parentTr ? parentTr.querySelector('td:first-child') : null;
+
+        if (firstTd) {
+            firstTd.style.color = "lightgray"; // Gray out the td text
+        }
+    } else {
+        const buttonElement = document.querySelector(`.${propertyName}`);
+        buttonElement.removeAttribute("disabled");
+    }
+});
+
