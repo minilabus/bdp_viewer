@@ -21,7 +21,7 @@ const {
 // -----------------------------------------------------------
 
 const BASE_URL = "https://github.com/minilabus/bdp_data/raw/main/";
-const BASE_SUBJ = "sub-01_";
+const BASE_SUBJ = "sub-02_";
 const TIME_FILES = [];
 for (let i = 1; i <= 11; i++) {
     const paddedNumber = String(i).padStart(2, '0');
@@ -49,17 +49,18 @@ const MESH_COLORMAP = {
     17: [0, 144, 81], // SPG (009051)
     18: [4, 51, 255], // STG (0433FF)
     19: [0, 113, 255], // TP (0071FF)
-    20: [255, 212, 121], // AG-IFG (8EFA00)
-    21: [118, 214, 255], // AG-ITG (76D6FF)
-    22: [255, 147, 0], // AG-MFG (FF9300)
-    23: [0, 150, 255], // AG-MTG (0096FF)
-    24: [0, 249, 0], // AG-PoCG (00F900)
-    25: [255, 38, 0], // AG-PrCG (FF2600)
-    26: [148, 17, 0], // AG-SFG (941100)
-    27: [212, 251, 121], // AG-SMG (D4FB79)
-    28: [0, 144, 81], // AG-SPG (009051)
-    29: [4, 51, 255], // AG-STG (0433FF)
-    30: [0, 113, 255], // AG-TP (0071FF)
+    20: [176, 196, 222], // HG (B0C4DE)
+    21: [160, 82, 45], // Ins (A0522D)
+    22: [255, 212, 121], // AG-IFG (8EFA00)
+    23: [118, 214, 255], // AG-ITG (76D6FF)
+    24: [255, 147, 0], // AG-MFG (FF9300)
+    25: [0, 150, 255], // AG-MTG (0096FF)
+    26: [0, 249, 0], // AG-PoCG (00F900)
+    27: [255, 38, 0], // AG-PrCG (FF2600)
+    28: [148, 17, 0], // AG-SFG (941100)
+    29: [212, 251, 121], // AG-SMG (D4FB79)
+    30: [0, 144, 81], // AG-SPG (009051)
+    31: [4, 51, 255], // AG-STG (0433FF)
 };
 
 const TRACTO_COLORMAP = {
@@ -105,6 +106,8 @@ const isTextured = {
     'cor_SPG': true,
     'cor_STG': true,
     'cor_TP': true,
+    'cor_HG': true,
+    'cor_Ins': true,
     'AG_IFG': true,
     'AG_ITG': true,
     'AG_MFG': true,
@@ -115,7 +118,6 @@ const isTextured = {
     'AG_SMG': true,
     'AG_SPG': true,
     'AG_STG': true,
-    'AG_TP': true,
 };
 
 const isShown = {
@@ -130,6 +132,22 @@ const isShown = {
     'asso_AGWM_STGWM': false,
 }
 
+const availableCortical = {
+    "sub-01_": ["cor_AG", "cor_FrOrb", "cor_FuG", "cor_IFG", "cor_IOG", "cor_ITG", "cor_LG",
+        "cor_MFG", "cor_MOG", "cor_MTG", "cor_PHG", "cor_PoCG", "cor_PrCG", "cor_SFG",
+        "cor_SMG", "cor_SOG", "cor_SPG", "cor_STG", "cor_TP", "cor_HG", "cor_Ins", "cor_White"
+    ],
+    "sub-02_": ["cor_AG", "cor_FrOrb", "cor_FuG", "cor_IFG", "cor_IOG", "cor_ITG", "cor_LG",
+        "cor_MFG", "cor_MOG", "cor_MTG", "cor_PHG", "cor_PoCG", "cor_PrCG", "cor_SFG",
+        "cor_SMG", "cor_SOG", "cor_SPG", "cor_STG", "cor_TP", "cor_White"
+    ],
+};
+
+const availableSubcortical = {
+    "sub-01_": ["AG_IFG", "AG_MFG", "AG_MTG", "AG_PoCG", "AG_PrCG", "AG_SMG", "AG_SPG"],
+    "sub-02_": ["AG_ITG", "AG_MFG", "AG_MTG", "AG_SFG", "AG_SMG", "AG_SPG", "AG_STG"],
+};
+
 const availableTractography = {
     "sub-01_": ["asso_AGWM_IFGWM", "asso_AGWM_MFGWM", "asso_AGWM_PrCGWM",
         "asso_AGWM_PoCGWM", "asso_AGWM_SMGWM", "asso_AGWM_SPGWM",
@@ -139,11 +157,6 @@ const availableTractography = {
         "asso_AGWM_SPGWM", "asso_AGWM_STGWM", "asso_AGWM_MTGWM",
         "asso_AGWM_ITGWM"
     ]
-};
-
-const availableSubcortical = {
-    "sub-01_": ["AG_IFG", "AG_MFG", "AG_MTG", "AG_PoCG", "AG_PrCG", "AG_SMG", "AG_SPG"],
-    "sub-02_": ["AG_ITG", "AG_MFG", "AG_MTG", "AG_SFG", "AG_SMG", "AG_SPG", "AG_STG"],
 };
 
 const tractoNames = availableTractography[BASE_SUBJ]
@@ -494,7 +507,7 @@ toggleNames.forEach((ToggleButton) => {
 
             for (let idx = 0; idx < textureNames.length; idx++) {
                 const buttonName = textureNames[idx];
-                if (buttonName.slice(0, 4) != tag) {
+                if (buttonName.slice(0, 4) != tag || !availableCortical[BASE_SUBJ].includes(buttonName)) {
                     continue;
                 }
 
@@ -510,7 +523,7 @@ toggleNames.forEach((ToggleButton) => {
 
             for (let idx = 0; idx < textureNames.length; idx++) {
                 const buttonName = textureNames[idx];
-                if (buttonName.slice(0, 3) != tag || ! availableSubcortical[BASE_SUBJ].includes(buttonName)) {
+                if (buttonName.slice(0, 3) != tag || !availableSubcortical[BASE_SUBJ].includes(buttonName)) {
                     continue;
                 }
                 isTextured[buttonName] = !toSet;
@@ -620,8 +633,10 @@ Object.keys(isShown).forEach((propertyName) => {
 });
 
 Object.keys(isTextured).forEach((propertyName) => {
-    const tag = "AG_"
-    if (propertyName.slice(0, 3) == tag && !availableSubcortical[BASE_SUBJ].includes(propertyName)) {
+    const case_1 = propertyName.slice(0, 3) == "AG_" && !availableSubcortical[BASE_SUBJ].includes(propertyName)
+    const case_2 = propertyName.slice(0, 4) == "cor_" && !availableCortical[BASE_SUBJ].includes(propertyName)
+
+    if (case_1 || case_2) {
         const buttonElement = document.querySelector(`.${propertyName}`);
         buttonElement.setAttribute("disabled", "disabled");
         buttonElement.style.color = "lightgray";
@@ -638,4 +653,3 @@ Object.keys(isTextured).forEach((propertyName) => {
         buttonElement.removeAttribute("disabled");
     }
 });
-
